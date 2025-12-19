@@ -3,12 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beyblade Manager Pro</title>
+    <title>BeyManager Ultimate - League Mode</title>
     <meta name="theme-color" content="#0f172a">
     <style>
         /* --- ESTILOS CSS --- */
-        /* Aquí definimos la apariencia visual de la aplicación.
-           Usamos variables (--nombre) para cambiar colores fácilmente. */
         :root {
             --bg-dark: #0f172a;
             --bg-card: #1e293b;
@@ -23,6 +21,8 @@
             --border: #334155;
             --danger: #ef4444;
             --cut-line: #f43f5e;
+            --whatsapp: #25D366;
+            --pt-color: #a855f7; /* Color violeta para los Puntos de Torneo */
         }
         * { box-sizing: border-box; }
         body {
@@ -31,16 +31,16 @@
             color: var(--text-main);
             margin: 0; padding: 15px; padding-bottom: 80px;
             min-height: 100vh;
+            user-select: none;
         }
 
-        /* --- UTILIDADES DE DISEÑO --- */
-        .container { max-width: 1000px; margin: 0 auto; }
-        .hidden { display: none !important; } /* Oculta secciones no activas */
+        /* --- UTILIDADES --- */
+        .container { max-width: 1100px; margin: 0 auto; position: relative; z-index: 10; }
+        .hidden { display: none !important; }
         .text-center { text-align: center; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; }
         .gap-10 { gap: 10px; }
         
-        /* --- TARJETAS (Cajas de contenido) --- */
         .card { 
             background-color: var(--bg-card); 
             border: 1px solid var(--border); 
@@ -56,7 +56,7 @@
             font-weight: bold; color: white; transition: 0.2s; 
             display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.95rem;
         }
-        .btn:active { transform: scale(0.98); }
+        .btn:active { transform: scale(0.95); }
         .btn-primary { background-color: var(--accent); }
         .btn-success { background-color: var(--success); color: #000; }
         .btn-warning { background-color: var(--gold); color: #000; }
@@ -66,34 +66,42 @@
             padding: 6px 12px; font-size: 0.85rem; 
         }
         .btn-ghost:hover { background-color: var(--border); color: white; }
+        
+        .btn-icon-only { width: 36px; height: 36px; padding: 0; border-radius: 50%; font-size: 1.2rem; }
+        .btn-whatsapp { background-color: var(--whatsapp); color: white; font-size: 0.8rem; }
+        .btn-file { position: relative; overflow: hidden; }
 
-        /* --- INPUTS (Campos de texto) --- */
+        /* --- INPUTS --- */
         .input-dark { 
             background-color: var(--bg-input); border: 1px solid var(--border); color: white; 
             padding: 12px; border-radius: 8px; width: 100%; font-size: 1rem; 
         }
         .input-dark:focus { border-color: var(--accent); outline: none; }
-        
-        /* Estilo especial para el selector desplegable */
         select.input-dark {
             cursor: pointer; appearance: none; 
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat; background-position: right 10px center; background-size: 16px; padding-right: 30px;
         }
 
-        /* --- TABLA GENERAL DE PUNTUACIÓN --- */
+        /* --- EDICIÓN Y FANTASMAS --- */
+        .is-ghost { font-style: italic; opacity: 0.6; color: var(--text-muted) !important; }
+        
+        .editable-name { cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: color 0.2s; }
+        .editable-name:hover { color: var(--accent); }
+        .edit-icon { opacity: 0.3; font-size: 0.8em; }
+        .editable-name:hover .edit-icon { opacity: 1; }
+
+        /* --- TABLAS --- */
         .standings-container { overflow-x: auto; margin-bottom: 20px; border: 1px solid var(--border); border-radius: 8px; }
         .global-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         .global-table th { background: var(--bg-input); padding: 10px; text-align: left; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; }
         .global-table td { padding: 10px; border-top: 1px solid var(--border); }
-        /* Estilos para los clasificados en verde */
         .global-table tr.qualified { background: rgba(34, 197, 94, 0.1); }
         .global-table tr.qualified td:first-child { border-left: 3px solid var(--success); }
-        /* Estilo para la línea roja de corte */
         .global-table tr.cut-line td { border-bottom: 2px dashed var(--cut-line); }
 
-        /* --- GRUPOS (Cuadrículas de combate) --- */
-        .groups-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 15px; }
+        /* --- GRID DE GRUPOS --- */
+        .groups-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .group-header { margin: 0 0 10px 0; border-bottom: 1px solid var(--border); padding-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
         .mini-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-bottom: 10px; }
         .mini-table th { text-align: left; color: var(--text-muted); padding: 4px; font-size: 0.75rem; }
@@ -102,14 +110,13 @@
         .match-row:last-child { border-bottom: none; }
         .player-name-match { font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 90px; }
         
-        /* Botones + y - */
         .score-wrapper { display: flex; align-items: center; gap: 5px; }
         .btn-score { width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main); font-weight: bold; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; touch-action: manipulation; }
         .btn-score:active { background: var(--accent); border-color: var(--accent); }
         .score-display { width: 30px; text-align: center; font-size: 1.2rem; font-weight: bold; pointer-events: none; }
         .score-display.winner { color: var(--success); text-shadow: 0 0 10px rgba(34, 197, 94, 0.4); }
 
-        /* --- ELIMINATORIAS (Brackets) --- */
+        /* --- BRACKETS --- */
         .match-card { background: var(--bg-card); margin-bottom: 12px; padding: 15px; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
         .match-card.final-match { border: 2px solid var(--gold); box-shadow: 0 0 15px rgba(234, 179, 8, 0.2); }
         .match-card.bronze-match { border: 2px solid var(--bronze); }
@@ -117,48 +124,87 @@
         .match-body { display: flex; align-items: center; justify-content: space-between; }
         .match-player { flex: 1; font-weight: bold; font-size: 1rem; }
         
-        /* --- CONFIGURACIÓN DE REGISTRO --- */
+        /* --- ESTILOS GANADOR --- */
+        .crown-icon { font-size: 4rem; margin-bottom: -10px; animation: floatCrown 2s ease-in-out infinite; }
+        @keyframes floatCrown { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        /* --- MODAL SORTEO --- */
+        #toss-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        #toss-modal.active { opacity: 1; pointer-events: auto; }
+        .toss-content { background: var(--bg-card); padding: 30px; border-radius: 15px; border: 1px solid var(--border); text-align: center; width: 300px; transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        #toss-modal.active .toss-content { transform: scale(1); }
+        .coin { font-size: 4rem; margin: 20px 0; display: inline-block; }
+        .spinning { animation: spinCoin 0.2s infinite linear; }
+        @keyframes spinCoin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
+
+        /* --- CANVAS CONFETTI --- */
+        #confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
+
+        /* --- CONFIG --- */
         header { margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
         .player-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid var(--border); background: var(--bg-input); margin-bottom: 5px; border-radius: 6px; }
         .config-block { background: rgba(51, 65, 85, 0.3); padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px solid var(--border); }
         .config-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
         .config-label { flex: 1; font-weight: bold; color: var(--text-muted); font-size: 0.9rem; }
-        
-        /* --- NOTIFICACIÓN (Toast) --- */
-        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--success); color: #000; padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 100; }
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--success); color: #000; padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 200; }
         .toast.show { opacity: 1; }
 
-        /* --- RESPONSIVE (Móviles) --- */
-        @media (max-width: 480px) {
+        /* --- RESPONSIVE --- */
+        @media (max-width: 768px) {
             .btn { width: 100%; }
             header .flex-between { flex-direction: column; gap: 10px; align-items: stretch; }
+            .header-tools { justify-content: space-between; width: 100%; }
             .groups-header-stack { flex-direction: column; gap: 15px; align-items: stretch !important; }
-            .controls-stack { flex-direction: row; justify-content: space-between; }
+            .groups-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
+<canvas id="confetti-canvas"></canvas>
+
+<input type="file" id="file-upload" accept=".json" style="display: none;" onchange="loadTournamentFile(this)">
+
+<div id="toss-modal" onclick="closeToss()">
+    <div class="toss-content" onclick="event.stopPropagation()">
+        <h2 style="margin-top:0; color:var(--gold);">Sorteo</h2>
+        <div id="coin-icon" class="coin">🎲</div>
+        <div id="toss-result" style="font-size:1.5rem; font-weight:bold; height:30px; margin-bottom:20px;">...</div>
+        <button class="btn btn-primary" onclick="spinToss()">Lanzar</button>
+        <button class="btn btn-ghost" onclick="closeToss()" style="margin-top:10px;">Cerrar</button>
+    </div>
+</div>
+
 <div class="container">
-    <!-- === ENCABEZADO (HEADER) === -->
     <header class="flex-between">
-        <div class="flex-between gap-10">
+        <div class="flex-between gap-10 header-tools">
             <div style="display: flex; align-items: center; gap: 8px;">
-                <!-- Icono de escudo SVG -->
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
                 <h1 style="margin:0; font-style:italic; font-size:1.5rem; letter-spacing:-1px;">BEY<span style="color:var(--accent)">MANAGER</span></h1>
             </div>
-            <div style="background:var(--bg-card); padding:4px 12px; border-radius:20px; font-size:0.8rem; border:1px solid var(--border);">
-                Meta: <strong style="color:var(--gold)">4 Pts</strong>
+            
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-ghost btn-icon-only" onclick="toggleMute()" title="Sonido">
+                    <span id="sound-icon">🔊</span>
+                </button>
+                <button class="btn btn-ghost btn-icon-only" onclick="openToss()" title="Sorteo">
+                    🎲
+                </button>
+                <div style="background:var(--bg-card); padding:6px 12px; border-radius:20px; font-size:0.8rem; border:1px solid var(--border); display:flex; align-items:center;">
+                    Meta: <strong style="color:var(--gold); margin-left:5px;">4</strong>
+                </div>
             </div>
         </div>
-        <div class="flex-between gap-10 controls-stack">
-            <button class="btn btn-ghost" onclick="downloadBackup()">💾 Guardar</button>
+        
+        <div class="flex-between gap-10 controls-stack" style="margin-top:10px;">
+            <div style="display:flex; gap:5px; flex:1;">
+                <button class="btn btn-ghost" onclick="document.getElementById('file-upload').click()" style="flex:1;">📂 Cargar</button>
+                <button class="btn btn-ghost" onclick="downloadBackup()" style="flex:1;">💾 Exportar</button>
+            </div>
             <button class="btn btn-ghost" onclick="goHome()" style="color:var(--danger); border-color:var(--danger); font-weight:bold;">🏠 Inicio</button>
         </div>
     </header>
 
-    <!-- === PANTALLA 1: REGISTRO === -->
     <div id="view-registration">
         <div class="card" style="max-width: 500px; margin: 0 auto;">
             <h2 style="margin:0 0 15px 0; font-size:1.2rem; border-bottom:1px solid var(--border); padding-bottom:10px;">
@@ -179,7 +225,6 @@
                 <p class="text-center" style="color:var(--text-muted); padding:20px; font-style:italic;">Agrega jugadores para comenzar</p>
             </div>
 
-            <!-- Panel de Configuración del Torneo -->
             <div id="group-config" class="hidden config-block">
                 <div class="config-row">
                     <label class="config-label">Grupos:</label>
@@ -195,7 +240,6 @@
                         <span id="rounds-max-msg" style="font-size:0.75rem; color:var(--text-muted);"></span>
                     </div>
                 </div>
-                <p id="group-info" style="font-size:0.75rem; color:var(--text-muted); text-align:center; margin:10px 0 0 0;"></p>
             </div>
 
             <button id="btn-start" class="btn btn-success" style="width:100%; margin-top:15px;" onclick="generateGroups()" disabled>
@@ -204,16 +248,17 @@
         </div>
     </div>
 
-    <!-- === PANTALLA 2: GRUPOS === -->
     <div id="view-groups" class="hidden">
         <div class="flex-between groups-header-stack" style="margin-bottom:20px;">
             <h2 style="margin:0;">Fase de Grupos</h2>
             
-            <div class="flex-between gap-10">
+            <div class="flex-between gap-10" style="flex-wrap:wrap; justify-content:flex-end;">
+                <button class="btn btn-whatsapp" onclick="copyStandingsToClipboard()">
+                    📱 Copiar Tabla
+                </button>
+
                 <div style="text-align:right;">
-                    <label style="font-size:0.7rem; color:var(--text-muted); display:block;">Corte Eliminatorio:</label>
                     <select id="knockout-size-select" onchange="renderGlobalStandings()" class="input-dark" style="padding:5px 30px 5px 10px; font-size:0.85rem; width:auto; border-color:var(--gold); color:var(--gold); font-weight:bold;">
-                        <!-- JS populated -->
                     </select>
                 </div>
                 <button class="btn btn-warning" style="font-size:0.85rem;" onclick="startKnockout()">
@@ -222,60 +267,61 @@
             </div>
         </div>
 
-        <!-- Tabla General de Clasificación (Todos los grupos juntos) -->
         <div class="card" style="padding: 10px;">
-            <h3 style="margin:0 0 10px 0; font-size: 1rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">
-                Tabla General de Clasificación
-            </h3>
+            <div class="flex-between" style="margin-bottom: 10px;">
+                <h3 style="margin:0; font-size: 1rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">
+                    Tabla General
+                </h3>
+                <button class="btn btn-ghost" onclick="redistributeGroups()" style="font-size: 0.75rem; padding: 4px 8px; border-color: var(--accent); color: var(--accent);">
+                    ↻ Redistribuir Grupos
+                </button>
+            </div>
+            
             <div class="standings-container">
                 <table class="global-table">
                     <thead>
                         <tr>
                             <th style="width: 40px;">#</th>
-                            <th>Blader</th>
+                            <th>Blader (Editar ✎)</th>
                             <th>Grupo</th>
-                            <th class="text-center">W</th>
-                            <th class="text-center">Pts</th>
+                            <th class="text-center" title="Puntos de Torneo (Liga)" style="color:var(--pt-color)">PT</th>
+                            <th class="text-center" title="Puntos a Favor (Combate)" style="color:var(--gold)">PF</th>
+                            <th class="text-center" title="Puntos en Contra" style="color:var(--text-muted)">PC</th>
+                            <th class="text-center" style="font-size:0.7rem; color:var(--text-muted)">Win</th>
                         </tr>
                     </thead>
-                    <tbody id="global-standings-body">
-                        <!-- JS populated -->
-                    </tbody>
+                    <tbody id="global-standings-body"></tbody>
                 </table>
             </div>
             <div class="text-center" style="font-size: 0.8rem; color: var(--text-muted);">
-                <span style="color: var(--success);">█</span> Clasifican a Eliminatorias
+                <span style="color: var(--success);">█</span> Clasifican
                 &nbsp;|&nbsp; 
-                <span style="color: var(--cut-line);">---</span> Línea de Corte
+                <span style="color: var(--cut-line);">---</span> Corte
+                &nbsp;|&nbsp;
+                <span style="color: var(--pt-color); font-weight:bold;">PT = Puntos Torneo (3/1)</span>
             </div>
         </div>
 
-        <div id="groups-container" class="groups-grid">
-            <!-- Aquí se insertan los grupos dinámicamente con JS -->
-        </div>
+        <div id="groups-container" class="groups-grid"></div>
     </div>
 
-    <!-- === PANTALLA 3: ELIMINATORIAS === -->
     <div id="view-knockout" class="hidden" style="max-width: 600px; margin: 0 auto;">
         <h2 class="text-center" style="color:var(--gold); margin-bottom:20px;">Fase Eliminatoria</h2>
         <div class="text-center" style="margin-bottom:15px;">
             <span id="round-badge" style="background:#1e3a8a; color:#93c5fd; padding:5px 15px; border-radius:20px; font-weight:bold; font-size:0.9rem; border:1px solid #1d4ed8;">Ronda 1</span>
         </div>
         
-        <div id="bracket-container">
-            <!-- JS populated -->
-        </div>
+        <div id="bracket-container"></div>
 
         <button class="btn btn-primary" style="width:100%; margin-top:20px; padding:15px;" onclick="advanceRound()">
             Confirmar Resultados y Avanzar
         </button>
     </div>
 
-    <!-- === PANTALLA 4: GANADOR === -->
-    <div id="view-winner" class="hidden text-center" style="padding-top:50px;">
-        <div style="font-size:5rem;">🏆</div>
-        <h2 style="color:var(--text-muted); text-transform:uppercase; letter-spacing:2px;">Gran Campeón</h2>
-        <div id="champion-name" style="font-size:3rem; font-weight:900; background:linear-gradient(to right, #facc15, #f97316); -webkit-background-clip:text; color:transparent; margin:20px 0;">
+    <div id="view-winner" class="hidden text-center" style="padding-top:30px;">
+        <div class="crown-icon">👑</div>
+        <h2 style="color:var(--text-muted); text-transform:uppercase; letter-spacing:2px; margin-top:0;">Gran Campeón</h2>
+        <div id="champion-name" style="font-size:3rem; font-weight:900; background:linear-gradient(to right, #facc15, #f97316); -webkit-background-clip:text; color:transparent; margin:10px 0 20px 0;">
             NOMBRE
         </div>
         
@@ -293,97 +339,202 @@
 
 <div id="toast" class="toast">Guardado</div>
 
-<!-- ==========================================
-     LÓGICA DEL PROGRAMA (JAVASCRIPT)
-     ========================================== -->
 <script>
-    // --- CONFIGURACIÓN PRINCIPAL ---
-    const POINTS_TO_WIN = 4; // Puntos necesarios para ganar una batalla
-    const STORAGE_KEY = 'bey_manager_pro_v4'; // Nombre para guardar en memoria del navegador
-    
-    // --- ESTADO INICIAL (Plantilla vacía) ---
-    // Define cómo se ve el torneo cuando recién empieza
-    const initialState = {
-        players: [],       // Lista de nombres
-        groups: [],        // Datos de grupos y matches
-        knockoutMatches: [], // Historial de eliminatorias
-        desiredGroupCount: 1, // Cuantos grupos quiere el usuario
-        phase: 'registration', // Fase actual: registration, groups, knockout, winner
-        roundsSetting: 1   // Cuantas rondas por jugador se jugarán
-    };
-    
-    // 'state' es la variable que guarda TODO lo que pasa en la app en tiempo real
-    let state = JSON.parse(JSON.stringify(initialState));
+    // ==========================================
+    // MOTOR DE AUDIO (SINTETIZADOR) 🔊
+    // ==========================================
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let isMuted = false;
 
-    // --- FUNCIÓN DE INICIO ---
-    // Se ejecuta apenas carga la página
-    window.onload = function() {
-        loadState(); // Intenta recuperar datos guardados
+    function toggleMute() {
+        isMuted = !isMuted;
+        document.getElementById('sound-icon').innerText = isMuted ? '🔇' : '🔊';
+        if(!isMuted && audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playTone(freq, type, duration, delay = 0) {
+        if(isMuted) return;
+        if(audioCtx.state === 'suspended') audioCtx.resume();
         
-        // Configura la tecla ENTER para agregar jugadores rápido
-        const input = document.getElementById('input-player');
-        if(input) {
-            input.addEventListener('keypress', (e) => { if (e.key === 'Enter') addPlayer(); });
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
+        
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + duration);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.start(audioCtx.currentTime + delay);
+        osc.stop(audioCtx.currentTime + delay + duration);
+    }
+
+    // Sonidos predefinidos
+    const SoundFX = {
+        click: () => playTone(800, 'sine', 0.1),
+        undo: () => playTone(300, 'triangle', 0.1),
+        success: () => { // Acorde simple C Mayor
+            playTone(523.25, 'sine', 0.2, 0);
+            playTone(659.25, 'sine', 0.2, 0.1);
+            playTone(783.99, 'sine', 0.4, 0.2);
+        },
+        winMatch: () => { // Fanfarria corta
+            playTone(523.25, 'square', 0.1, 0);
+            playTone(523.25, 'square', 0.1, 0.1);
+            playTone(783.99, 'square', 0.4, 0.2);
+        },
+        champion: () => { // Fanfarria larga
+            [523, 659, 783, 1046, 783, 1046].forEach((f, i) => playTone(f, 'sawtooth', 0.3, i * 0.15));
         }
     };
 
-    // --- SISTEMA DE GUARDADO (PERSISTENCIA) ---
+    // ==========================================
+    // SISTEMA DE SORTEO (RULETA) 🎲
+    // ==========================================
+    function openToss() {
+        document.getElementById('toss-modal').classList.add('active');
+        document.getElementById('toss-result').innerText = "...";
+        document.getElementById('coin-icon').classList.remove('spinning');
+    }
     
-    // Guarda el estado actual en la memoria del navegador
-    function saveState() {
-        // Guardar configuración de rondas antes de escribir en disco
-        const rInput = document.getElementById('rounds-input');
-        if(rInput && state.phase === 'registration') state.roundsSetting = rInput.value; 
-        
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-        showToast(); // Muestra mensajito "Guardado"
+    function closeToss() {
+        document.getElementById('toss-modal').classList.remove('active');
     }
 
-    // Recupera los datos de la memoria
+    function spinToss() {
+        const icon = document.getElementById('coin-icon');
+        const res = document.getElementById('toss-result');
+        
+        icon.classList.add('spinning');
+        res.innerText = "Girando...";
+        SoundFX.click();
+
+        setTimeout(() => {
+            icon.classList.remove('spinning');
+            const winner = Math.random() > 0.5 ? "JUGADOR 1" : "JUGADOR 2";
+            res.innerText = winner;
+            res.style.color = winner === "JUGADOR 1" ? "var(--accent)" : "var(--success)";
+            SoundFX.success();
+        }, 1000);
+    }
+
+    // ==========================================
+    // SISTEMA DE CONFETI
+    // ==========================================
+    const confettiCanvas = document.getElementById('confetti-canvas');
+    const ctx = confettiCanvas.getContext('2d');
+    let confettiParticles = [];
+    let confettiAnimationId = null;
+
+    function resizeCanvas() {
+        confettiCanvas.width = window.innerWidth;
+        confettiCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function createConfettiParticle(isContinuous) {
+        const colors = ['#eab308', '#ef4444', '#3b82f6', '#22c55e', '#ffffff'];
+        return {
+            x: isContinuous ? Math.random() * confettiCanvas.width : confettiCanvas.width / 2,
+            y: isContinuous ? -10 : confettiCanvas.height / 2,
+            size: Math.random() * 8 + 4,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            speedX: Math.random() * 6 - 3,
+            speedY: Math.random() * 6 - 3 - (isContinuous ? 0 : 5),
+            gravity: 0.1,
+            rotation: Math.random() * 360,
+            rotationSpeed: Math.random() * 10 - 5
+        };
+    }
+
+    function updateConfetti() {
+        ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        if (confettiParticles.length > 0) {
+            confettiParticles.forEach((p, index) => {
+                p.x += p.speedX; p.y += p.speedY; p.speedY += p.gravity; p.rotation += p.rotationSpeed;
+                ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.rotation * Math.PI) / 180);
+                ctx.fillStyle = p.color; ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size); ctx.restore();
+                if (p.y > confettiCanvas.height) confettiParticles.splice(index, 1);
+            });
+            confettiAnimationId = requestAnimationFrame(updateConfetti);
+        } else {
+            cancelAnimationFrame(confettiAnimationId); confettiAnimationId = null;
+        }
+    }
+
+    function fireConfettiBurst() {
+        for(let i=0; i<60; i++) confettiParticles.push(createConfettiParticle(false));
+        if(!confettiAnimationId) updateConfetti();
+    }
+
+    let continuousInterval = null;
+    function startContinuousConfetti() {
+        if(continuousInterval) return;
+        continuousInterval = setInterval(() => {
+            for(let i=0; i<5; i++) {
+                const p = createConfettiParticle(true);
+                p.speedY = Math.random() * 3 + 2;
+                confettiParticles.push(p);
+            }
+            if(!confettiAnimationId) updateConfetti();
+        }, 100);
+    }
+
+    function stopConfetti() {
+        if(continuousInterval) { clearInterval(continuousInterval); continuousInterval = null; }
+        confettiParticles = []; ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+    }
+
+    // ==========================================
+    // LÓGICA DEL TORNEO (MODIFICADA PARA LIGA)
+    // ==========================================
+    const POINTS_TO_WIN = 4; 
+    const STORAGE_KEY = 'bey_manager_ult_v11_league';
+    
+    const initialState = {
+        players: [], groups: [], knockoutMatches: [], 
+        desiredGroupCount: 1, phase: 'registration', roundsSetting: 1   
+    };
+    
+    let state = JSON.parse(JSON.stringify(initialState));
+
+    window.onload = function() {
+        loadState(); 
+        const input = document.getElementById('input-player');
+        if(input) input.addEventListener('keypress', (e) => { if (e.key === 'Enter') addPlayer(); });
+    };
+
+    function saveState() {
+        const rInput = document.getElementById('rounds-input');
+        if(rInput && state.phase === 'registration') state.roundsSetting = rInput.value; 
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        showToast("Auto-Guardado"); 
+    }
+
     function loadState() {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
-            try {
-                const parsed = JSON.parse(saved);
-                state = { ...initialState, ...parsed }; // Mezcla datos guardados con estructura base
-                restoreUI(); // Reconstruye la pantalla correcta
-            } catch(e) { console.error("Error save", e); }
-        } else {
-            restoreUI();
-        }
+            try { state = { ...initialState, ...JSON.parse(saved) }; restoreUI(); } catch(e) { console.error(e); }
+        } else { restoreUI(); }
     }
 
-    // --- NAVEGACIÓN Y RESETEO ---
-
-    // Función del botón INICIO
     function goHome() {
-        if(state.players.length > 0) {
-            if(confirm("¿Deseas volver al inicio?\n\n¡CUIDADO! Se borrará todo el progreso actual.")) {
-                hardReset(true);
-            }
-        } else {
-            hardReset(true);
-        }
+        if(confirm("¿Volver al inicio? Se perderá el progreso.")) hardReset(true);
     }
 
-    // Función del botón RESET en pantalla de ganador
-    function resetTournament(force = false) {
-        if(force || confirm("¿Estás seguro de borrar todo y empezar de cero?")) {
-            hardReset();
-        }
-    }
-
-    // Reseteo duro: Borra memoria y recarga la página
     function hardReset(force = false) {
-        localStorage.removeItem(STORAGE_KEY); // Borrar datos guardados
-        window.location.reload(); // Recargar página para limpiar variables en memoria RAM
+        localStorage.removeItem(STORAGE_KEY);
+        window.location.reload(); 
     }
 
-    // --- GESTIÓN DE VISTAS (UI) ---
-    
-    // Decide qué pantalla mostrar basándose en 'state.phase'
     function restoreUI() {
-        hideAllViews(); // Oculta todo primero
+        hideAllViews();
+        if(state.phase !== 'winner') stopConfetti();
+
         const pInput = document.getElementById('input-player');
         if(pInput) pInput.value = '';
         
@@ -414,31 +565,61 @@
             .forEach(id => document.getElementById(id).classList.add('hidden'));
     }
 
-    // --- LÓGICA DE REGISTRO ---
+    function editPlayerName(id) {
+        let player = state.players.find(p => p.id === id);
+        if (!player) {
+            state.groups.forEach(g => {
+                const found = g.players.find(p => p.id === id || p.id === String(id));
+                if(found) player = found;
+            });
+        }
+        if(!player) return;
+
+        const newName = prompt("Editar nombre:", player.name);
+        if(newName && newName.trim() !== "") {
+            const finalName = newName.trim();
+            const master = state.players.find(p => p.id === id);
+            if(master) master.name = finalName;
+
+            state.groups.forEach(g => {
+                const pGroup = g.players.find(p => p.id === id || p.id === String(id));
+                if(pGroup) pGroup.name = finalName;
+                g.matches.forEach(m => {
+                    if(m.p1Id === id || m.p1Id === String(id)) m.p1Name = finalName;
+                    if(m.p2Id === id || m.p2Id === String(id)) m.p2Name = finalName;
+                });
+            });
+
+            state.knockoutMatches.forEach(round => {
+                round.matches.forEach(m => {
+                    if(m.p1 && (m.p1.id === id || m.p1.id === String(id))) m.p1.name = finalName;
+                    if(m.p2 && (m.p2.id === id || m.p2.id === String(id))) m.p2.name = finalName;
+                    if(m.winner && (m.winner.id === id || m.winner.id === String(id))) m.winner.name = finalName;
+                });
+            });
+            saveState(); restoreUI();
+        }
+    }
 
     function addPlayer() {
         const input = document.getElementById('input-player');
         const name = input.value.trim();
         if(!name) return;
         state.players.push({ id: Date.now(), name });
-        input.value = '';
-        input.focus(); // Mantiene el cursor en la casilla para seguir escribiendo
+        input.value = ''; input.focus(); 
+        SoundFX.click(); // Sound
         
-        // Ajusta automáticamente el número de grupos sugerido
         const maxGroups = Math.max(1, Math.floor(state.players.length / 2));
         if(state.desiredGroupCount > maxGroups) state.desiredGroupCount = maxGroups;
-
-        renderPlayerList();
-        saveState();
+        renderPlayerList(); saveState();
     }
 
     function removePlayer(id) {
         state.players = state.players.filter(p => p.id !== id);
-        renderPlayerList();
-        saveState();
+        SoundFX.undo();
+        renderPlayerList(); saveState();
     }
 
-    // Dibuja la lista de nombres en pantalla
     function renderPlayerList() {
         const list = document.getElementById('players-list');
         const counter = document.getElementById('player-counter');
@@ -456,7 +637,6 @@
             list.appendChild(el);
         });
 
-        // Solo muestra config y botón iniciar si hay al menos 2 jugadores
         if (state.players.length >= 2) {
             config.classList.remove('hidden');
             btn.disabled = false;
@@ -465,119 +645,204 @@
             slider.value = state.desiredGroupCount;
             updateGroupCount(state.desiredGroupCount);
         } else {
-            config.classList.add('hidden');
-            btn.disabled = true;
+            config.classList.add('hidden'); btn.disabled = true;
         }
     }
 
-    // Actualiza el texto informativo del slider de grupos
     function updateGroupCount(val) {
         state.desiredGroupCount = parseInt(val);
         document.getElementById('group-count-display').innerText = val;
         
         const perGroup = state.players.length / state.desiredGroupCount;
         const maxP = Math.ceil(perGroup);
-        // Lógica Berger: Si son impares, se suma un fantasma para calcular rondas
-        const effectiveSize = maxP % 2 === 0 ? maxP : maxP + 1;
-        const maxRounds = effectiveSize - 1;
+        const maxRounds = maxP - 1 + (maxP % 2 !== 0 ? 1 : 0);
         
         const rInput = document.getElementById('rounds-input');
         const rMsg = document.getElementById('rounds-max-msg');
         rInput.max = maxRounds;
         if(parseInt(rInput.value) > maxRounds) rInput.value = maxRounds;
-        rMsg.innerText = `(Máx: ${maxRounds})`;
+        rMsg.innerText = `(Máx recom: ${maxRounds})`;
     }
 
     function validateRounds() {
         const input = document.getElementById('rounds-input');
-        if(parseInt(input.value) > parseInt(input.max)) input.value = input.max;
         if(parseInt(input.value) < 1) input.value = 1;
     }
 
-    // --- LÓGICA DE GENERACIÓN DE GRUPOS ---
-    
     function generateGroups() {
-        // 1. Mezclar jugadores al azar
         const shuffled = [...state.players].sort(() => 0.5 - Math.random());
         const numGroups = state.desiredGroupCount;
+        SoundFX.success(); 
         
-        // 2. Crear contenedores de grupos
         state.groups = Array.from({length: numGroups}, (_,i) => ({
             id: i, name: `Grupo ${String.fromCharCode(65+i)}`, players: [], matches: []
         }));
 
-        // 3. Repartir jugadores (Snake draft simplificado)
         shuffled.forEach((p, i) => {
-            state.groups[i % numGroups].players.push({...p, stats: {wins:0, pts:0}});
+            state.groups[i % numGroups].players.push({
+                ...p, 
+                // Inicializamos estadísticas con la nueva métrica tourneyPts
+                stats: {wins:0, pts:0, ptsAgainst:0, tourneyPts:0}, 
+                isGhost: false
+            });
+        });
+
+        let maxCount = 0;
+        state.groups.forEach(g => maxCount = Math.max(maxCount, g.players.length));
+        state.groups.forEach(g => {
+            let ghostIndex = 1;
+            while(g.players.length < maxCount) {
+                const groupLetter = g.name.split(' ')[1]; 
+                g.players.push({
+                    id: `GHOST-${g.id}-${ghostIndex}`, name: `Fantasma ${groupLetter}-${ghostIndex}`,
+                    isGhost: true, stats: {wins:0, pts:0, ptsAgainst:0, tourneyPts:0}
+                });
+                ghostIndex++;
+            }
         });
 
         const roundsLimit = parseInt(document.getElementById('rounds-input').value);
-        
-        // 4. Generar partidos usando algoritmo circular (Berger Table)
         state.groups.forEach(g => {
-            const pList = [...g.players];
-            // Si el grupo es impar, agregar un "Fantasma" para que el algoritmo funcione
-            if(pList.length % 2 !== 0) pList.push({id:'GHOST', isGhost:true});
+            let pList = [...g.players];
+            if (pList.length % 2 !== 0) pList.push({ id: 'BYE_INTERNAL', isBye: true });
+
             const N = pList.length;
             let indices = pList.map((_, i) => i);
-            
-            for(let r=0; r < Math.min(roundsLimit, N-1); r++) {
+            const totalRoundsPossible = N - 1; 
+            const roundsToPlay = Math.min(roundsLimit, totalRoundsPossible);
+
+            for(let r=0; r < roundsToPlay; r++) {
                 for(let i=0; i < N/2; i++) {
                     const p1 = pList[indices[i]];
                     const p2 = pList[indices[N-1-i]];
-                    // Solo crear partido si ambos son reales (no fantasmas)
-                    if(!p1.isGhost && !p2.isGhost) {
+                    if (!p1.isBye && !p2.isBye) {
                         g.matches.push({
                             id: `${g.id}-R${r}-${p1.id}-${p2.id}`,
-                            p1Id: p1.id, p1Name: p1.name, p2Id: p2.id, p2Name: p2.name,
+                            p1Id: p1.id, p1Name: p1.name, p1Ghost: p1.isGhost,
+                            p2Id: p2.id, p2Name: p2.name, p2Ghost: p2.isGhost,
                             s1: 0, s2: 0, played: false
                         });
                     }
                 }
-                // Rotar indices para la siguiente ronda
                 indices.splice(1, 0, indices.pop());
             }
         });
 
         state.phase = 'groups';
-        saveState();
-        restoreUI();
+        saveState(); restoreUI();
     }
 
-    // --- LÓGICA DE PUNTAJE (GRUPOS) ---
+    function redistributeGroups() {
+        if(!confirm("¿Redistribuir los grupos? Se perderán los puntajes.")) return;
+        generateGroups();
+    }
 
+    // --- FUNCIÓN CLAVE: CALCULO DE PUNTOS DE TORNEO ---
     function adjustScore(gId, mId, playerNum, delta) {
         const group = state.groups.find(g => g.id === gId);
         const match = group.matches.find(m => m.id === mId);
         
-        // Actualizar puntaje visual (Min 0, Max 6)
+        // Sonidos
+        if(delta > 0) SoundFX.click(); else SoundFX.undo();
+
         if(playerNum === 1) match.s1 = Math.max(0, Math.min(6, match.s1 + delta));
         else match.s2 = Math.max(0, Math.min(6, match.s2 + delta));
         match.played = true;
 
-        // Recalcular estadísticas del grupo completo
-        // Reiniciamos stats a 0 y sumamos todo de nuevo para evitar errores
-        group.players.forEach(p => { p.stats.wins=0; p.stats.pts=0; });
+        // Verificar victoria inmediata (Visual y Sonoro)
+        if((playerNum === 1 && match.s1 >= POINTS_TO_WIN) || (playerNum === 2 && match.s2 >= POINTS_TO_WIN)) {
+             SoundFX.winMatch();
+        }
+
+        // RECALCULO GENERAL DE ESTADÍSTICAS
+        group.players.forEach(p => { 
+            p.stats.wins = 0; 
+            p.stats.pts = 0; // PF (Puntos a Favor)
+            p.stats.ptsAgainst = 0; // PC (Puntos en Contra)
+            p.stats.tourneyPts = 0; // PT (Puntos de Torneo - NUEVO)
+        });
+
         group.matches.forEach(m => {
             const p1 = group.players.find(p => p.id === m.p1Id);
             const p2 = group.players.find(p => p.id === m.p2Id);
+            
             if(p1 && p2) {
-                p1.stats.pts += m.s1;
+                // Sumar PF y PC
+                p1.stats.pts += m.s1; 
                 p2.stats.pts += m.s2;
-                // Condición de victoria: Tener >= 4 puntos Y más que el rival
-                if(m.s1 >= POINTS_TO_WIN && m.s1 > m.s2) p1.stats.wins++;
-                else if(m.s2 >= POINTS_TO_WIN && m.s2 > m.s1) p2.stats.wins++;
+                p1.stats.ptsAgainst += m.s2; 
+                p2.stats.ptsAgainst += m.s1;
+                
+                // Determinar Ganador del Combate
+                const p1Winner = m.s1 >= POINTS_TO_WIN && m.s1 > m.s2;
+                const p2Winner = m.s2 >= POINTS_TO_WIN && m.s2 > m.s1;
+
+                // Sumar Victorias
+                if (p1Winner) p1.stats.wins++;
+                if (p2Winner) p2.stats.wins++;
+
+                // LÓGICA DE PUNTOS DE TORNEO (3 por victoria, 1 por derrota/participación)
+                // Se asume participación si alguien ganó el set (partido finalizado)
+                if (p1Winner || p2Winner) {
+                    if (p1Winner) {
+                        p1.stats.tourneyPts += 3;
+                        p2.stats.tourneyPts += 1; // 1 punto por participar (perder)
+                    } else {
+                        p2.stats.tourneyPts += 3;
+                        p1.stats.tourneyPts += 1; // 1 punto por participar (perder)
+                    }
+                }
             }
         });
-
-        saveState();
-        renderGroups();
-        renderGlobalStandings(); // Actualizar la tabla general también
+        saveState(); renderGroups(); renderGlobalStandings(); 
     }
 
-    // --- RENDERIZADO DE TABLAS ---
+    // --- NUEVO COMPARADOR (PT > PF > PC) ---
+    function comparePlayers(a, b) {
+        // 1. Puntos de Torneo (PT) - Prioridad absoluta
+        const ptA = a.stats.tourneyPts || 0;
+        const ptB = b.stats.tourneyPts || 0;
+        if (ptB !== ptA) return ptB - ptA;
 
-    // Dibuja la tabla unificada con todos los jugadores
+        // 2. Puntos a Favor (PF)
+        if (b.stats.pts !== a.stats.pts) return b.stats.pts - a.stats.pts;
+
+        // 3. Puntos en Contra (PC) - Menor es mejor
+        const pcA = a.stats.ptsAgainst || 0;
+        const pcB = b.stats.ptsAgainst || 0;
+        if (pcA !== pcB) return pcA - pcB; 
+
+        // 4. Desempate final por ID
+        if (String(a.id) !== String(b.id)) return String(a.id) > String(b.id) ? 1 : -1;
+        return 0;
+    }
+
+    // --- FUNCIÓN COPIAR WHATSAPP 📱 ---
+    function copyStandingsToClipboard() {
+        let allPlayers = [];
+        state.groups.forEach(g => g.players.forEach(p => allPlayers.push({ ...p, groupName: g.name })));
+        allPlayers = allPlayers.filter(p => !p.isGhost);
+        allPlayers.sort(comparePlayers);
+
+        const cutoff = parseInt(document.getElementById('knockout-size-select').value) || 2;
+        let text = "🏆 *Torneo BeyManager*\n_Tabla de Posiciones (PT/PF)_\n\n";
+
+        allPlayers.forEach((p, i) => {
+            if(i === cutoff) text += "------------------\n";
+            const icon = i < cutoff ? "✅" : "❌";
+            text += `${i+1}. ${p.name} -> ${p.stats.tourneyPts}pts (PF:${p.stats.pts})\n`;
+        });
+
+        text += "\n_Generado con BeyManager_";
+
+        navigator.clipboard.writeText(text)
+            .then(() => {
+                showToast("Copiado al portapapeles"); 
+                SoundFX.success();
+            })
+            .catch(err => alert("Error al copiar (Permiso denegado)"));
+    }
+
     function renderGlobalStandings() {
         const tbody = document.getElementById('global-standings-body');
         const selector = document.getElementById('knockout-size-select');
@@ -590,39 +855,44 @@
             });
         });
 
-        // Ordenar globalmente: Más victorias > Más puntos
-        allPlayers.sort((a,b) => b.stats.wins - a.stats.wins || b.stats.pts - a.stats.pts);
+        allPlayers.sort(comparePlayers);
 
         tbody.innerHTML = '';
         allPlayers.forEach((p, idx) => {
             const tr = document.createElement('tr');
-            // Pintar verde si clasifica
             if(idx < cutoff) tr.classList.add('qualified');
-            // Pintar línea de corte
             if(idx === cutoff - 1 && idx < allPlayers.length - 1) tr.classList.add('cut-line');
             
+            const ghostClass = p.isGhost ? 'is-ghost' : '';
+            const idSafe = typeof p.id === 'string' ? `'${p.id}'` : p.id;
+            
+            // Renderizado con nuevas columnas PT, PF, PC
             tr.innerHTML = `
                 <td style="color:var(--text-muted); font-weight:bold;">${idx + 1}</td>
-                <td style="font-weight:bold;">${p.name}</td>
+                <td>
+                    <span class="editable-name ${ghostClass}" onclick="editPlayerName(${idSafe})">
+                        ${p.name} <span class="edit-icon">✎</span>
+                    </span>
+                </td>
                 <td style="font-size:0.8rem; color:var(--text-muted);">${p.groupName}</td>
-                <td class="text-center" style="color:${p.stats.wins > 0 ? 'var(--success)' : ''}">${p.stats.wins}</td>
+                
+                <td class="text-center" style="color:var(--pt-color); font-weight:bold; font-size:1.1rem;">${p.stats.tourneyPts || 0}</td>
                 <td class="text-center" style="color:var(--gold); font-family:monospace;">${p.stats.pts}</td>
+                <td class="text-center" style="color:var(--text-muted); font-family:monospace;">${p.stats.ptsAgainst || 0}</td>
+                <td class="text-center" style="font-size:0.8rem; color:var(--text-muted)">${p.stats.wins}</td>
             `;
             tbody.appendChild(tr);
         });
     }
 
-    // Dibuja las tarjetas de cada grupo
     function renderGroups() {
         const container = document.getElementById('groups-container');
         container.innerHTML = '';
 
         state.groups.forEach(g => {
-            // Ordenar jugadores del grupo localmente
-            const sorted = [...g.players].sort((a,b) => b.stats.wins - a.stats.wins || b.stats.pts - a.stats.pts);
+            const sorted = [...g.players].sort(comparePlayers);
             let matchesHTML = g.matches.length ? '' : '<div class="text-center" style="padding:10px; color:gray;">Sin partidos</div>';
             
-            // Generar HTML de los partidos
             g.matches.forEach(m => {
                 const done = m.s1 >= POINTS_TO_WIN || m.s2 >= POINTS_TO_WIN;
                 const p1Win = done && m.s1 > m.s2;
@@ -630,7 +900,7 @@
 
                 matchesHTML += `
                 <div class="match-row" style="background: ${done ? 'rgba(0,0,0,0.2)' : 'transparent'}">
-                    <div style="flex:1; text-align:right; font-weight:${p1Win?'bold':'normal'}; color:${p1Win?'var(--success)':'white'};" class="player-name-match">${m.p1Name}</div>
+                    <div style="flex:1; text-align:right; font-weight:${p1Win?'bold':'normal'}; color:${p1Win?'var(--success)':'white'};" class="player-name-match ${m.p1Ghost ? 'is-ghost' : ''}">${m.p1Name}</div>
                     <div style="display:flex; gap:8px; align-items:center; margin:0 10px;">
                         <div class="score-wrapper">
                             <button class="btn-score" onclick="adjustScore(${g.id}, '${m.id}', 1, -1)">-</button>
@@ -644,11 +914,10 @@
                             <button class="btn-score" onclick="adjustScore(${g.id}, '${m.id}', 2, 1)">+</button>
                         </div>
                     </div>
-                    <div style="flex:1; text-align:left; font-weight:${p2Win?'bold':'normal'}; color:${p2Win?'var(--success)':'white'};" class="player-name-match">${m.p2Name}</div>
+                    <div style="flex:1; text-align:left; font-weight:${p2Win?'bold':'normal'}; color:${p2Win?'var(--success)':'white'};" class="player-name-match ${m.p2Ghost ? 'is-ghost' : ''}">${m.p2Name}</div>
                 </div>`;
             });
 
-            // Crear la tarjeta del grupo
             const div = document.createElement('div');
             div.className = 'card';
             div.innerHTML = `
@@ -656,13 +925,20 @@
                     <h3 style="margin:0;">${g.name}</h3>
                 </div>
                 <table class="mini-table">
-                    <thead><tr><th>#</th><th>Blader</th><th>W</th><th>Pts</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Blader</th>
+                            <th title="Puntos Torneo" style="color:var(--pt-color)">PT</th>
+                            <th title="Puntos Favor" style="color:var(--gold)">PF</th>
+                        </tr>
+                    </thead>
                     <tbody>
                         ${sorted.map((p,i) => `
                             <tr>
                                 <td style="color:gray;">${i+1}</td>
-                                <td style="font-weight:bold;">${p.name}</td>
-                                <td style="color:${p.stats.wins>0?'var(--success)':'gray'}">${p.stats.wins}</td>
+                                <td style="font-weight:bold;" class="${p.isGhost ? 'is-ghost' : ''}">${p.name}</td>
+                                <td style="color:var(--pt-color); font-weight:bold;">${p.stats.tourneyPts || 0}</td>
                                 <td style="color:var(--gold)">${p.stats.pts}</td>
                             </tr>`).join('')}
                     </tbody>
@@ -675,23 +951,17 @@
         });
     }
 
-    // --- LÓGICA DE ELIMINATORIAS (BRACKETS) ---
-
-    // Llena el selector "Top 2, Top 4, Top 8" basado en cantidad de jugadores
     function updateKnockoutSelector() {
         const select = document.getElementById('knockout-size-select');
         select.innerHTML = '';
-        const total = state.players.length;
+        const total = state.players.length; 
         let val = 2;
         const powers = [];
-        // Generar potencias de 2 (2, 4, 8, 16...)
         while(val <= total) { powers.push(val); val *= 2; }
-        
         powers.forEach(p => {
             const opt = document.createElement('option');
             opt.value = p; opt.text = `Top ${p}`; select.appendChild(opt);
         });
-        // Seleccionar el máximo posible por defecto
         if(powers.length > 0) select.value = powers[powers.length - 1];
     }
 
@@ -699,12 +969,11 @@
         const targetCount = parseInt(document.getElementById('knockout-size-select').value);
         let allPlayers = [];
         state.groups.forEach(g => allPlayers.push(...g.players));
+        allPlayers = allPlayers.filter(p => !p.isGhost);
+        allPlayers.sort(comparePlayers);
         
-        // Ordenar a todos y cortar según la selección
-        allPlayers.sort((a,b) => b.stats.wins - a.stats.wins || b.stats.pts - a.stats.pts);
-        const qualified = allPlayers.slice(0, targetCount);
-
-        // Crear enfrentamientos: 1 vs Último, 2 vs Penúltimo...
+        const qualified = allPlayers.slice(0, Math.min(targetCount, allPlayers.length));
+        
         const matches = [];
         for(let i=0; i<qualified.length/2; i++) {
             matches.push({
@@ -714,28 +983,33 @@
                 s1: 0, s2: 0, winner: null
             });
         }
-
         state.knockoutMatches = [{ round: 1, matches }];
         state.phase = 'knockout';
-        saveState();
-        restoreUI();
+        SoundFX.success();
+        saveState(); restoreUI();
     }
 
-    // Actualizar puntaje en eliminatorias
     function adjustKnockoutScore(rIdx, mIdx, pNum, delta) {
         const match = state.knockoutMatches[rIdx].matches[mIdx];
-        if(match.winner) return; // Si ya ganó alguien, bloquear edición (opcional)
+        if(match.winner) return; 
+
+        if(delta > 0) SoundFX.click(); else SoundFX.undo();
 
         if(pNum === 1) match.s1 = Math.max(0, Math.min(6, match.s1 + delta));
         else match.s2 = Math.max(0, Math.min(6, match.s2 + delta));
 
-        // Chequear ganador automáticamente al llegar a 4 puntos
+        const prevWinner = match.winner;
+
         if (match.s1 >= POINTS_TO_WIN && match.s1 > match.s2) match.winner = match.p1;
         else if (match.s2 >= POINTS_TO_WIN && match.s2 > match.s1) match.winner = match.p2;
         else match.winner = null;
 
-        saveState();
-        renderBracket();
+        if(!prevWinner && match.winner) {
+            fireConfettiBurst();
+            SoundFX.winMatch();
+        }
+
+        saveState(); renderBracket();
     }
 
     function renderBracket() {
@@ -780,27 +1054,22 @@
         });
     }
 
-    // Avanzar a la siguiente ronda
     function advanceRound() {
         const curRound = state.knockoutMatches[state.knockoutMatches.length - 1];
-        // Validar que todos los partidos tengan ganador
-        if(curRound.matches.some(m => !m.winner)) return alert("Faltan combates por terminar (4 puntos min).");
+        if(curRound.matches.some(m => !m.winner)) return alert("Faltan combates por terminar.");
+        
+        SoundFX.success(); // Sound
 
-        // Caso: Ya terminó la final -> Ir a pantalla de ganador
         if (curRound.matches.length === 1 && !curRound.matches[0].isThird) {
             state.phase = 'winner'; saveState(); restoreUI(); return;
         }
         if (curRound.matches.some(m => m.isFinal)) {
              state.phase = 'winner'; saveState(); restoreUI(); return;
         }
-
         const winners = curRound.matches.map(m => m.winner);
-        
-        // Caso especial: SEMIFINALES -> Generar Final y 3er Puesto
         if (curRound.matches.length === 2) { 
             const m1 = curRound.matches[0]; const m2 = curRound.matches[1];
             const w1 = m1.winner; const w2 = m2.winner;
-            // Los perdedores van al 3er puesto
             const l1 = m1.winner.id === m1.p1.id ? m1.p2 : m1.p1;
             const l2 = m2.winner.id === m2.p1.id ? m2.p2 : m2.p1;
             
@@ -809,7 +1078,6 @@
                 { id: 'THIRD', p1: l1, p2: l2, s1: 0, s2: 0, winner: null, isThird: true }
             ]});
         } else {
-            // Caso normal: Generar siguiente ronda con los ganadores
             const nextMatches = [];
             for(let i=0; i<winners.length; i+=2) {
                 nextMatches.push({ id: `KO_R${state.knockoutMatches.length}_${i}`, p1: winners[i], p2: winners[i+1], s1:0, s2:0, winner:null });
@@ -820,13 +1088,13 @@
     }
 
     function renderWinnerView() {
+        startContinuousConfetti();
+        SoundFX.champion(); // MUSICA FINAL
+
         const finalRound = state.knockoutMatches[state.knockoutMatches.length - 1];
         const finalMatch = finalRound.matches.find(m => m.isFinal) || finalRound.matches[0];
         const bronzeMatch = finalRound.matches.find(m => m.isThird);
-        
-        // Mostrar Campeón
         if(finalMatch && finalMatch.winner) document.getElementById('champion-name').innerText = finalMatch.winner.name;
-        // Mostrar 3er Lugar si existe
         if(bronzeMatch && bronzeMatch.winner) {
             document.getElementById('third-place-container').classList.remove('hidden');
             document.getElementById('third-place-name').innerText = bronzeMatch.winner.name;
@@ -835,17 +1103,44 @@
         }
     }
 
-    // --- UTILIDAD: DESCARGAR COPIA DE SEGURIDAD ---
+    // --- GUARDADO Y CARGA DE ARCHIVOS ---
     function downloadBackup() {
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
         const a = document.createElement('a');
         a.href = dataStr; a.download = "torneo_bey_" + new Date().toISOString().slice(0,10) + ".json";
         a.click();
+        showToast("Archivo Exportado");
+    }
+
+    function loadTournamentFile(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                // Validación básica de integridad
+                if (data.players && data.phase && data.groups) {
+                    state = data;
+                    saveState(); // Guardar en LocalStorage
+                    restoreUI(); // Refrescar la vista
+                    showToast("Torneo Cargado Exitosamente");
+                    SoundFX.success();
+                } else {
+                    alert("Error: El archivo no es válido o está dañado.");
+                }
+            } catch (err) {
+                alert("Error al leer el archivo.");
+            }
+        };
+        reader.readAsText(file);
+        input.value = ''; // Reset para poder cargar el mismo archivo si es necesario
     }
     
-    // Muestra cartelito flotante de "Guardado"
-    function showToast() {
+    function showToast(msg="Guardado") {
         const t = document.getElementById('toast');
+        t.innerText = msg;
         t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 1500);
     }
 </script>
