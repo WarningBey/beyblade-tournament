@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beyblade Manager Pro</title>
+    <meta name="theme-color" content="#0f172a">
+    <style>
+        /* --- ESTILOS CSS --- */
+        /* Aquí definimos la apariencia visual de la aplicación.
+           Usamos variables (--nombre) para cambiar colores fácilmente. */
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #020617;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #22c55e;
+            --gold: #eab308;
+            --bronze: #d97706;
+            --border: #334155;
+            --danger: #ef4444;
+            --cut-line: #f43f5e;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0; padding: 15px; padding-bottom: 80px;
+            min-height: 100vh;
+        }
+
+        /* --- UTILIDADES DE DISEÑO --- */
+        .container { max-width: 1000px; margin: 0 auto; }
+        .hidden { display: none !important; } /* Oculta secciones no activas */
+        .text-center { text-align: center; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .gap-10 { gap: 10px; }
+        
+        /* --- TARJETAS (Cajas de contenido) --- */
+        .card { 
+            background-color: var(--bg-card); 
+            border: 1px solid var(--border); 
+            border-radius: 12px; 
+            padding: 15px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3); 
+        }
+
+        /* --- BOTONES --- */
+        .btn { 
+            cursor: pointer; border: none; padding: 10px 16px; border-radius: 8px; 
+            font-weight: bold; color: white; transition: 0.2s; 
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.95rem;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background-color: var(--accent); }
+        .btn-success { background-color: var(--success); color: #000; }
+        .btn-warning { background-color: var(--gold); color: #000; }
+        .btn-danger { background-color: var(--danger); }
+        .btn-ghost { 
+            background-color: transparent; border: 1px solid var(--border); color: var(--text-muted); 
+            padding: 6px 12px; font-size: 0.85rem; 
+        }
+        .btn-ghost:hover { background-color: var(--border); color: white; }
+
+        /* --- INPUTS (Campos de texto) --- */
+        .input-dark { 
+            background-color: var(--bg-input); border: 1px solid var(--border); color: white; 
+            padding: 12px; border-radius: 8px; width: 100%; font-size: 1rem; 
+        }
+        .input-dark:focus { border-color: var(--accent); outline: none; }
+        
+        /* Estilo especial para el selector desplegable */
+        select.input-dark {
+            cursor: pointer; appearance: none; 
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat; background-position: right 10px center; background-size: 16px; padding-right: 30px;
+        }
+
+        /* --- TABLA GENERAL DE PUNTUACIÓN --- */
+        .standings-container { overflow-x: auto; margin-bottom: 20px; border: 1px solid var(--border); border-radius: 8px; }
+        .global-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .global-table th { background: var(--bg-input); padding: 10px; text-align: left; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; }
+        .global-table td { padding: 10px; border-top: 1px solid var(--border); }
+        /* Estilos para los clasificados en verde */
+        .global-table tr.qualified { background: rgba(34, 197, 94, 0.1); }
+        .global-table tr.qualified td:first-child { border-left: 3px solid var(--success); }
+        /* Estilo para la línea roja de corte */
+        .global-table tr.cut-line td { border-bottom: 2px dashed var(--cut-line); }
+
+        /* --- GRUPOS (Cuadrículas de combate) --- */
+        .groups-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 15px; }
+        .group-header { margin: 0 0 10px 0; border-bottom: 1px solid var(--border); padding-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .mini-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-bottom: 10px; }
+        .mini-table th { text-align: left; color: var(--text-muted); padding: 4px; font-size: 0.75rem; }
+        .mini-table td { padding: 4px; border-bottom: 1px solid #1e293b; }
+        .match-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+        .match-row:last-child { border-bottom: none; }
+        .player-name-match { font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 90px; }
+        
+        /* Botones + y - */
+        .score-wrapper { display: flex; align-items: center; gap: 5px; }
+        .btn-score { width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main); font-weight: bold; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; touch-action: manipulation; }
+        .btn-score:active { background: var(--accent); border-color: var(--accent); }
+        .score-display { width: 30px; text-align: center; font-size: 1.2rem; font-weight: bold; pointer-events: none; }
+        .score-display.winner { color: var(--success); text-shadow: 0 0 10px rgba(34, 197, 94, 0.4); }
+
+        /* --- ELIMINATORIAS (Brackets) --- */
+        .match-card { background: var(--bg-card); margin-bottom: 12px; padding: 15px; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
+        .match-card.final-match { border: 2px solid var(--gold); box-shadow: 0 0 15px rgba(234, 179, 8, 0.2); }
+        .match-card.bronze-match { border: 2px solid var(--bronze); }
+        .match-header { text-align: center; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gold); font-weight: bold; }
+        .match-body { display: flex; align-items: center; justify-content: space-between; }
+        .match-player { flex: 1; font-weight: bold; font-size: 1rem; }
+        
+        /* --- CONFIGURACIÓN DE REGISTRO --- */
+        header { margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+        .player-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid var(--border); background: var(--bg-input); margin-bottom: 5px; border-radius: 6px; }
+        .config-block { background: rgba(51, 65, 85, 0.3); padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px solid var(--border); }
+        .config-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .config-label { flex: 1; font-weight: bold; color: var(--text-muted); font-size: 0.9rem; }
+        
+        /* --- NOTIFICACIÓN (Toast) --- */
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--success); color: #000; padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 100; }
+        .toast.show { opacity: 1; }
+
+        /* --- RESPONSIVE (Móviles) --- */
+        @media (max-width: 480px) {
+            .btn { width: 100%; }
+            header .flex-between { flex-direction: column; gap: 10px; align-items: stretch; }
+            .groups-header-stack { flex-direction: column; gap: 15px; align-items: stretch !important; }
+            .controls-stack { flex-direction: row; justify-content: space-between; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- === ENCABEZADO (HEADER) === -->
+    <header class="flex-between">
+        <div class="flex-between gap-10">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <!-- Icono de escudo SVG -->
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                <h1 style="margin:0; font-style:italic; font-size:1.5rem; letter-spacing:-1px;">BEY<span style="color:var(--accent)">MANAGER</span></h1>
+            </div>
+            <div style="background:var(--bg-card); padding:4px 12px; border-radius:20px; font-size:0.8rem; border:1px solid var(--border);">
+                Meta: <strong style="color:var(--gold)">4 Pts</strong>
+            </div>
+        </div>
+        <div class="flex-between gap-10 controls-stack">
+            <button class="btn btn-ghost" onclick="downloadBackup()">💾 Guardar</button>
+            <button class="btn btn-ghost" onclick="goHome()" style="color:var(--danger); border-color:var(--danger); font-weight:bold;">🏠 Inicio</button>
+        </div>
+    </header>
+
+    <!-- === PANTALLA 1: REGISTRO === -->
+    <div id="view-registration">
+        <div class="card" style="max-width: 500px; margin: 0 auto;">
+            <h2 style="margin:0 0 15px 0; font-size:1.2rem; border-bottom:1px solid var(--border); padding-bottom:10px;">
+                Registro de Bladers
+            </h2>
+            
+            <div class="flex-between gap-10" style="margin-bottom:15px;">
+                <input type="text" id="input-player" class="input-dark" placeholder="Nombre..." autocomplete="off">
+                <button class="btn btn-primary" style="width: auto;" onclick="addPlayer()">+</button>
+            </div>
+
+            <div class="flex-between" style="margin-bottom:5px; font-size:0.85rem; color:var(--text-muted);">
+                <span>Lista de Inscritos</span>
+                <span style="color: white; font-weight: bold;">Total: <span id="player-counter">0</span></span>
+            </div>
+
+            <div id="players-list" style="max-height: 250px; overflow-y: auto; margin-bottom: 15px;">
+                <p class="text-center" style="color:var(--text-muted); padding:20px; font-style:italic;">Agrega jugadores para comenzar</p>
+            </div>
+
+            <!-- Panel de Configuración del Torneo -->
+            <div id="group-config" class="hidden config-block">
+                <div class="config-row">
+                    <label class="config-label">Grupos:</label>
+                    <div style="flex:2; display:flex; align-items:center; gap:10px;">
+                        <input type="range" id="group-slider" min="1" max="1" value="1" oninput="updateGroupCount(this.value)" style="width:100%;">
+                        <span id="group-count-display" style="background:var(--bg-dark); padding:2px 8px; border-radius:4px; font-weight:bold;">1</span>
+                    </div>
+                </div>
+                <div class="config-row">
+                    <label class="config-label">Rondas:</label>
+                    <div style="flex:2; display:flex; align-items:center; gap:10px;">
+                        <input type="number" id="rounds-input" min="1" max="10" value="1" onchange="validateRounds()" class="input-dark" style="padding:5px; width:60px; text-align:center;">
+                        <span id="rounds-max-msg" style="font-size:0.75rem; color:var(--text-muted);"></span>
+                    </div>
+                </div>
+                <p id="group-info" style="font-size:0.75rem; color:var(--text-muted); text-align:center; margin:10px 0 0 0;"></p>
+            </div>
+
+            <button id="btn-start" class="btn btn-success" style="width:100%; margin-top:15px;" onclick="generateGroups()" disabled>
+                INICIAR TORNEO
+            </button>
+        </div>
+    </div>
+
+    <!-- === PANTALLA 2: GRUPOS === -->
+    <div id="view-groups" class="hidden">
+        <div class="flex-between groups-header-stack" style="margin-bottom:20px;">
+            <h2 style="margin:0;">Fase de Grupos</h2>
+            
+            <div class="flex-between gap-10">
+                <div style="text-align:right;">
+                    <label style="font-size:0.7rem; color:var(--text-muted); display:block;">Corte Eliminatorio:</label>
+                    <select id="knockout-size-select" onchange="renderGlobalStandings()" class="input-dark" style="padding:5px 30px 5px 10px; font-size:0.85rem; width:auto; border-color:var(--gold); color:var(--gold); font-weight:bold;">
+                        <!-- JS populated -->
+                    </select>
+                </div>
+                <button class="btn btn-warning" style="font-size:0.85rem;" onclick="startKnockout()">
+                    Ir a Llaves &raquo;
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabla General de Clasificación (Todos los grupos juntos) -->
+        <div class="card" style="padding: 10px;">
+            <h3 style="margin:0 0 10px 0; font-size: 1rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">
+                Tabla General de Clasificación
+            </h3>
+            <div class="standings-container">
+                <table class="global-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;">#</th>
+                            <th>Blader</th>
+                            <th>Grupo</th>
+                            <th class="text-center">W</th>
+                            <th class="text-center">Pts</th>
+                        </tr>
+                    </thead>
+                    <tbody id="global-standings-body">
+                        <!-- JS populated -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-center" style="font-size: 0.8rem; color: var(--text-muted);">
+                <span style="color: var(--success);">█</span> Clasifican a Eliminatorias
+                &nbsp;|&nbsp; 
+                <span style="color: var(--cut-line);">---</span> Línea de Corte
+            </div>
+        </div>
+
+        <div id="groups-container" class="groups-grid">
+            <!-- Aquí se insertan los grupos dinámicamente con JS -->
+        </div>
+    </div>
+
+    <!-- === PANTALLA 3: ELIMINATORIAS === -->
+    <div id="view-knockout" class="hidden" style="max-width: 600px; margin: 0 auto;">
+        <h2 class="text-center" style="color:var(--gold); margin-bottom:20px;">Fase Eliminatoria</h2>
+        <div class="text-center" style="margin-bottom:15px;">
+            <span id="round-badge" style="background:#1e3a8a; color:#93c5fd; padding:5px 15px; border-radius:20px; font-weight:bold; font-size:0.9rem; border:1px solid #1d4ed8;">Ronda 1</span>
+        </div>
+        
+        <div id="bracket-container">
+            <!-- JS populated -->
+        </div>
+
+        <button class="btn btn-primary" style="width:100%; margin-top:20px; padding:15px;" onclick="advanceRound()">
+            Confirmar Resultados y Avanzar
+        </button>
+    </div>
+
+    <!-- === PANTALLA 4: GANADOR === -->
+    <div id="view-winner" class="hidden text-center" style="padding-top:50px;">
+        <div style="font-size:5rem;">🏆</div>
+        <h2 style="color:var(--text-muted); text-transform:uppercase; letter-spacing:2px;">Gran Campeón</h2>
+        <div id="champion-name" style="font-size:3rem; font-weight:900; background:linear-gradient(to right, #facc15, #f97316); -webkit-background-clip:text; color:transparent; margin:20px 0;">
+            NOMBRE
+        </div>
+        
+        <div id="third-place-container" class="hidden" style="margin-top:30px; padding-top:20px; border-top:1px solid var(--border);">
+             <div style="font-size:2rem;">🥉</div>
+             <h3 style="color:var(--bronze); margin:5px 0;">3er Lugar</h3>
+             <div id="third-place-name" style="font-size:1.5rem; font-weight:bold; color:white;"></div>
+        </div>
+
+        <button class="btn btn-ghost" onclick="hardReset(true)" style="margin-top:40px;">
+            Iniciar Nuevo Torneo
+        </button>
+    </div>
+</div>
+
+<div id="toast" class="toast">Guardado</div>
+
+<!-- ==========================================
+     LÓGICA DEL PROGRAMA (JAVASCRIPT)
+     ========================================== -->
+<script>
+    // --- CONFIGURACIÓN PRINCIPAL ---
+    const POINTS_TO_WIN = 4; // Puntos necesarios para ganar una batalla
+    const STORAGE_KEY = 'bey_manager_pro_v4'; // Nombre para guardar en memoria del navegador
+    
+    // --- ESTADO INICIAL (Plantilla vacía) ---
+    // Define cómo se ve el torneo cuando recién empieza
+    const initialState = {
+        players: [],       // Lista de nombres
+        groups: [],        // Datos de grupos y matches
+        knockoutMatches: [], // Historial de eliminatorias
+        desiredGroupCount: 1, // Cuantos grupos quiere el usuario
+        phase: 'registration', // Fase actual: registration, groups, knockout, winner
+        roundsSetting: 1   // Cuantas rondas por jugador se jugarán
+    };
+    
+    // 'state' es la variable que guarda TODO lo que pasa en la app en tiempo real
+    let state = JSON.parse(JSON.stringify(initialState));
+
+    // --- FUNCIÓN DE INICIO ---
+    // Se ejecuta apenas carga la página
+    window.onload = function() {
+        loadState(); // Intenta recuperar datos guardados
+        
+        // Configura la tecla ENTER para agregar jugadores rápido
+        const input = document.getElementById('input-player');
+        if(input) {
+            input.addEventListener('keypress', (e) => { if (e.key === 'Enter') addPlayer(); });
+        }
+    };
+
+    // --- SISTEMA DE GUARDADO (PERSISTENCIA) ---
+    
+    // Guarda el estado actual en la memoria del navegador
+    function saveState() {
+        // Guardar configuración de rondas antes de escribir en disco
+        const rInput = document.getElementById('rounds-input');
+        if(rInput && state.phase === 'registration') state.roundsSetting = rInput.value; 
+        
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        showToast(); // Muestra mensajito "Guardado"
+    }
+
+    // Recupera los datos de la memoria
+    function loadState() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                state = { ...initialState, ...parsed }; // Mezcla datos guardados con estructura base
+                restoreUI(); // Reconstruye la pantalla correcta
+            } catch(e) { console.error("Error save", e); }
+        } else {
+            restoreUI();
+        }
+    }
+
+    // --- NAVEGACIÓN Y RESETEO ---
+
+    // Función del botón INICIO
+    function goHome() {
+        if(state.players.length > 0) {
+            if(confirm("¿Deseas volver al inicio?\n\n¡CUIDADO! Se borrará todo el progreso actual.")) {
+                hardReset(true);
+            }
+        } else {
+            hardReset(true);
+        }
+    }
+
+    // Función del botón RESET en pantalla de ganador
+    function resetTournament(force = false) {
+        if(force || confirm("¿Estás seguro de borrar todo y empezar de cero?")) {
+            hardReset();
+        }
+    }
+
+    // Reseteo duro: Borra memoria y recarga la página
+    function hardReset(force = false) {
+        localStorage.removeItem(STORAGE_KEY); // Borrar datos guardados
+        window.location.reload(); // Recargar página para limpiar variables en memoria RAM
+    }
+
+    // --- GESTIÓN DE VISTAS (UI) ---
+    
+    // Decide qué pantalla mostrar basándose en 'state.phase'
+    function restoreUI() {
+        hideAllViews(); // Oculta todo primero
+        const pInput = document.getElementById('input-player');
+        if(pInput) pInput.value = '';
+        
+        if (state.phase === 'registration') {
+            document.getElementById('view-registration').classList.remove('hidden');
+            renderPlayerList();
+            const rInput = document.getElementById('rounds-input');
+            if(rInput) rInput.value = state.roundsSetting || 1;
+        } 
+        else if (state.phase === 'groups') {
+            document.getElementById('view-groups').classList.remove('hidden');
+            renderGroups();
+            updateKnockoutSelector(); 
+            renderGlobalStandings();
+        }
+        else if (state.phase === 'knockout') {
+            document.getElementById('view-knockout').classList.remove('hidden');
+            renderBracket();
+        }
+        else if (state.phase === 'winner') {
+            document.getElementById('view-winner').classList.remove('hidden');
+            renderWinnerView();
+        }
+    }
+
+    function hideAllViews() {
+        ['view-registration', 'view-groups', 'view-knockout', 'view-winner']
+            .forEach(id => document.getElementById(id).classList.add('hidden'));
+    }
+
+    // --- LÓGICA DE REGISTRO ---
+
+    function addPlayer() {
+        const input = document.getElementById('input-player');
+        const name = input.value.trim();
+        if(!name) return;
+        state.players.push({ id: Date.now(), name });
+        input.value = '';
+        input.focus(); // Mantiene el cursor en la casilla para seguir escribiendo
+        
+        // Ajusta automáticamente el número de grupos sugerido
+        const maxGroups = Math.max(1, Math.floor(state.players.length / 2));
+        if(state.desiredGroupCount > maxGroups) state.desiredGroupCount = maxGroups;
+
+        renderPlayerList();
+        saveState();
+    }
+
+    function removePlayer(id) {
+        state.players = state.players.filter(p => p.id !== id);
+        renderPlayerList();
+        saveState();
+    }
+
+    // Dibuja la lista de nombres en pantalla
+    function renderPlayerList() {
+        const list = document.getElementById('players-list');
+        const counter = document.getElementById('player-counter');
+        const config = document.getElementById('group-config');
+        const btn = document.getElementById('btn-start');
+        const slider = document.getElementById('group-slider');
+
+        counter.innerText = state.players.length;
+        list.innerHTML = '';
+
+        state.players.forEach(p => {
+            const el = document.createElement('div');
+            el.className = 'player-item';
+            el.innerHTML = `<span>${p.name}</span> <span onclick="removePlayer(${p.id})" style="color:var(--danger); font-weight:bold; cursor:pointer;">✕</span>`;
+            list.appendChild(el);
+        });
+
+        // Solo muestra config y botón iniciar si hay al menos 2 jugadores
+        if (state.players.length >= 2) {
+            config.classList.remove('hidden');
+            btn.disabled = false;
+            const maxGroups = Math.floor(state.players.length / 2);
+            slider.max = maxGroups;
+            slider.value = state.desiredGroupCount;
+            updateGroupCount(state.desiredGroupCount);
+        } else {
+            config.classList.add('hidden');
+            btn.disabled = true;
+        }
+    }
+
+    // Actualiza el texto informativo del slider de grupos
+    function updateGroupCount(val) {
+        state.desiredGroupCount = parseInt(val);
+        document.getElementById('group-count-display').innerText = val;
+        
+        const perGroup = state.players.length / state.desiredGroupCount;
+        const maxP = Math.ceil(perGroup);
+        // Lógica Berger: Si son impares, se suma un fantasma para calcular rondas
+        const effectiveSize = maxP % 2 === 0 ? maxP : maxP + 1;
+        const maxRounds = effectiveSize - 1;
+        
+        const rInput = document.getElementById('rounds-input');
+        const rMsg = document.getElementById('rounds-max-msg');
+        rInput.max = maxRounds;
+        if(parseInt(rInput.value) > maxRounds) rInput.value = maxRounds;
+        rMsg.innerText = `(Máx: ${maxRounds})`;
+    }
+
+    function validateRounds() {
+        const input = document.getElementById('rounds-input');
+        if(parseInt(input.value) > parseInt(input.max)) input.value = input.max;
+        if(parseInt(input.value) < 1) input.value = 1;
+    }
+
+    // --- LÓGICA DE GENERACIÓN DE GRUPOS ---
+    
+    function generateGroups() {
+        // 1. Mezclar jugadores al azar
+        const shuffled = [...state.players].sort(() => 0.5 - Math.random());
+        const numGroups = state.desiredGroupCount;
+        
+        // 2. Crear contenedores de grupos
+        state.groups = Array.from({length: numGroups}, (_,i) => ({
+            id: i, name: `Grupo ${String.fromCharCode(65+i)}`, players: [], matches: []
+        }));
+
+        // 3. Repartir jugadores (Snake draft simplificado)
+        shuffled.forEach((p, i) => {
+            state.groups[i % numGroups].players.push({...p, stats: {wins:0, pts:0}});
+        });
+
+        const roundsLimit = parseInt(document.getElementById('rounds-input').value);
+        
+        // 4. Generar partidos usando algoritmo circular (Berger Table)
+        state.groups.forEach(g => {
+            const pList = [...g.players];
+            // Si el grupo es impar, agregar un "Fantasma" para que el algoritmo funcione
+            if(pList.length % 2 !== 0) pList.push({id:'GHOST', isGhost:true});
+            const N = pList.length;
+            let indices = pList.map((_, i) => i);
+            
+            for(let r=0; r < Math.min(roundsLimit, N-1); r++) {
+                for(let i=0; i < N/2; i++) {
+                    const p1 = pList[indices[i]];
+                    const p2 = pList[indices[N-1-i]];
+                    // Solo crear partido si ambos son reales (no fantasmas)
+                    if(!p1.isGhost && !p2.isGhost) {
+                        g.matches.push({
+                            id: `${g.id}-R${r}-${p1.id}-${p2.id}`,
+                            p1Id: p1.id, p1Name: p1.name, p2Id: p2.id, p2Name: p2.name,
+                            s1: 0, s2: 0, played: false
+                        });
+                    }
+                }
+                // Rotar indices para la siguiente ronda
+                indices.splice(1, 0, indices.pop());
+            }
+        });
+
+        state.phase = 'groups';
+        saveState();
+        restoreUI();
+    }
+
+    // --- LÓGICA DE PUNTAJE (GRUPOS) ---
+
+    function adjustScore(gId, mId, playerNum, delta) {
+        const group = state.groups.find(g => g.id === gId);
+        const match = group.matches.find(m => m.id === mId);
+        
+        // Actualizar puntaje visual (Min 0, Max 6)
+        if(playerNum === 1) match.s1 = Math.max(0, Math.min(6, match.s1 + delta));
+        else match.s2 = Math.max(0, Math.min(6, match.s2 + delta));
+        match.played = true;
+
+        // Recalcular estadísticas del grupo completo
+        // Reiniciamos stats a 0 y sumamos todo de nuevo para evitar errores
+        group.players.forEach(p => { p.stats.wins=0; p.stats.pts=0; });
+        group.matches.forEach(m => {
+            const p1 = group.players.find(p => p.id === m.p1Id);
+            const p2 = group.players.find(p => p.id === m.p2Id);
+            if(p1 && p2) {
+                p1.stats.pts += m.s1;
+                p2.stats.pts += m.s2;
+                // Condición de victoria: Tener >= 4 puntos Y más que el rival
+                if(m.s1 >= POINTS_TO_WIN && m.s1 > m.s2) p1.stats.wins++;
+                else if(m.s2 >= POINTS_TO_WIN && m.s2 > m.s1) p2.stats.wins++;
+            }
+        });
+
+        saveState();
+        renderGroups();
+        renderGlobalStandings(); // Actualizar la tabla general también
+    }
+
+    // --- RENDERIZADO DE TABLAS ---
+
+    // Dibuja la tabla unificada con todos los jugadores
+    function renderGlobalStandings() {
+        const tbody = document.getElementById('global-standings-body');
+        const selector = document.getElementById('knockout-size-select');
+        const cutoff = parseInt(selector.value) || 2;
+        
+        let allPlayers = [];
+        state.groups.forEach(g => {
+            g.players.forEach(p => {
+                allPlayers.push({ ...p, groupName: g.name });
+            });
+        });
+
+        // Ordenar globalmente: Más victorias > Más puntos
+        allPlayers.sort((a,b) => b.stats.wins - a.stats.wins || b.stats.pts - a.stats.pts);
+
+        tbody.innerHTML = '';
+        allPlayers.forEach((p, idx) => {
+            const tr = document.createElement('tr');
+            // Pintar verde si clasifica
+            if(idx < cutoff) tr.classList.add('qualified');
+            // Pintar línea de corte
+            if(idx === cutoff - 1 && idx < allPlayers.length - 1) tr.classList.add('cut-line');
+            
+            tr.innerHTML = `
+                <td style="color:var(--text-muted); font-weight:bold;">${idx + 1}</td>
+                <td style="font-weight:bold;">${p.name}</td>
+                <td style="font-size:0.8rem; color:var(--text-muted);">${p.groupName}</td>
+                <td class="text-center" style="color:${p.stats.wins > 0 ? 'var(--success)' : ''}">${p.stats.wins}</td>
+                <td class="text-center" style="color:var(--gold); font-family:monospace;">${p.stats.pts}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Dibuja las tarjetas de cada grupo
+    function renderGroups() {
+        const container = document.getElementById('groups-container');
+        container.innerHTML = '';
+
+        state.groups.forEach(g => {
+            // Ordenar jugadores del grupo localmente
+            const sorted = [...g.players].sort((a,b) => b.stats.wins - a.stats.wins || b.stats.pts - a.stats.pts);
+            let matchesHTML = g.matches.length ? '' : '<div class="text-center" style="padding:10px; color:gray;">Sin partidos</div>';
+            
+            // Generar HTML de los partidos
+            g.matches.forEach(m => {
+                const done = m.s1 >= POINTS_TO_WIN || m.s2 >= POINTS_TO_WIN;
+                const p1Win = done && m.s1 > m.s2;
+                const p2Win = done && m.s2 > m.s1;
+
+                matchesHTML += `
+                <div class="match-row" style="background: ${done ? 'rgba(0,0,0,0.2)' : 'transparent'}">
+                    <div style="flex:1; text-align:right; font-weight:${p1Win?'bold':'normal'}; color:${p1Win?'var(--success)':'white'};" class="player-name-match">${m.p1Name}</div>
+                    <div style="display:flex; gap:8px; align-items:center; margin:0 10px;">
+                        <div class="score-wrapper">
+                            <button class="btn-score" onclick="adjustScore(${g.id}, '${m.id}', 1, -1)">-</button>
+                            <div class="score-display ${p1Win?'winner':''}">${m.s1}</div>
+                            <button class="btn-score" onclick="adjustScore(${g.id}, '${m.id}', 1, 1)">+</button>
+                        </div>
+                        <span style="color:gray; font-weight:bold;">:</span>
+                        <div class="score-wrapper">
+                            <button class="btn-score" onclick="adjustScore(${g.id}, '${m.id}', 2, -1)">-</button>
+                            <div class="score-display ${p2Win?'winner':''}">${m.s2}</div>
+                            <button class="btn-score" onclick="adjustScore(${g.id}, '${m.id}', 2, 1)">+</button>
+                        </div>
+                    </div>
+                    <div style="flex:1; text-align:left; font-weight:${p2Win?'bold':'normal'}; color:${p2Win?'var(--success)':'white'};" class="player-name-match">${m.p2Name}</div>
+                </div>`;
+            });
+
+            // Crear la tarjeta del grupo
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.innerHTML = `
+                <div class="group-header">
+                    <h3 style="margin:0;">${g.name}</h3>
+                </div>
+                <table class="mini-table">
+                    <thead><tr><th>#</th><th>Blader</th><th>W</th><th>Pts</th></tr></thead>
+                    <tbody>
+                        ${sorted.map((p,i) => `
+                            <tr>
+                                <td style="color:gray;">${i+1}</td>
+                                <td style="font-weight:bold;">${p.name}</td>
+                                <td style="color:${p.stats.wins>0?'var(--success)':'gray'}">${p.stats.wins}</td>
+                                <td style="color:var(--gold)">${p.stats.pts}</td>
+                            </tr>`).join('')}
+                    </tbody>
+                </table>
+                <div style="margin-top:10px; border-top:1px solid #334155; padding-top:10px;">
+                    ${matchesHTML}
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    // --- LÓGICA DE ELIMINATORIAS (BRACKETS) ---
+
+    // Llena el selector "Top 2, Top 4, Top 8" basado en cantidad de jugadores
+    function updateKnockoutSelector() {
+        const select = document.getElementById('knockout-size-select');
+        select.innerHTML = '';
+        const total = state.players.length;
+        let val = 2;
+        const powers = [];
+        // Generar potencias de 2 (2, 4, 8, 16...)
+        while(val <= total) { powers.push(val); val *= 2; }
+        
+        powers.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p; opt.text = `Top ${p}`; select.appendChild(opt);
+        });
+        // Seleccionar el máximo posible por defecto
+        if(powers.length > 0) select.value = powers[powers.length - 1];
+    }
+
+    function startKnockout() {
+        const targetCount = parseInt(document.getElementById('knockout-size-select').value);
+        let allPlayers = [];
+        state.groups.forEach(g => allPlayers.push(...g.players));
+        
+        // Ordenar a todos y cortar según la selección
+        allPlayers.sort((a,b) => b.stats.wins - a.stats.wins || b.stats.pts - a.stats.pts);
+        const qualified = allPlayers.slice(0, targetCount);
+
+        // Crear enfrentamientos: 1 vs Último, 2 vs Penúltimo...
+        const matches = [];
+        for(let i=0; i<qualified.length/2; i++) {
+            matches.push({
+                id: `KO_R1_${i}`,
+                p1: qualified[i],
+                p2: qualified[qualified.length - 1 - i],
+                s1: 0, s2: 0, winner: null
+            });
+        }
+
+        state.knockoutMatches = [{ round: 1, matches }];
+        state.phase = 'knockout';
+        saveState();
+        restoreUI();
+    }
+
+    // Actualizar puntaje en eliminatorias
+    function adjustKnockoutScore(rIdx, mIdx, pNum, delta) {
+        const match = state.knockoutMatches[rIdx].matches[mIdx];
+        if(match.winner) return; // Si ya ganó alguien, bloquear edición (opcional)
+
+        if(pNum === 1) match.s1 = Math.max(0, Math.min(6, match.s1 + delta));
+        else match.s2 = Math.max(0, Math.min(6, match.s2 + delta));
+
+        // Chequear ganador automáticamente al llegar a 4 puntos
+        if (match.s1 >= POINTS_TO_WIN && match.s1 > match.s2) match.winner = match.p1;
+        else if (match.s2 >= POINTS_TO_WIN && match.s2 > match.s1) match.winner = match.p2;
+        else match.winner = null;
+
+        saveState();
+        renderBracket();
+    }
+
+    function renderBracket() {
+        const container = document.getElementById('bracket-container');
+        container.innerHTML = '';
+        const curRound = state.knockoutMatches[state.knockoutMatches.length - 1];
+        document.getElementById('round-badge').innerText = curRound.label || `Ronda ${curRound.round}`;
+
+        curRound.matches.forEach((m, idx) => {
+            const p1Win = m.winner?.id === m.p1.id;
+            const p2Win = m.winner?.id === m.p2.id;
+            let label = m.isFinal ? "GRAN FINAL" : (m.isThird ? "Por el 3er Lugar" : "");
+            let extraClass = m.isFinal ? 'final-match' : (m.isThird ? 'bronze-match' : '');
+
+            const div = document.createElement('div');
+            div.className = `match-card ${extraClass}`;
+            div.innerHTML = `
+                ${label ? `<div class="match-header">${label}</div>` : ''}
+                <div class="match-body">
+                    <div class="match-player" style="text-align:right; color:${p1Win?'var(--success)':'white'}; opacity:${m.winner && !p1Win ? 0.5 : 1}">
+                        ${m.p1.name} ${p1Win ? '<div style="font-size:0.7rem">GANADOR</div>' : ''}
+                    </div>
+                    <div style="display:flex; gap:5px; align-items:center; margin:0 10px;">
+                        <div class="score-wrapper">
+                            <button class="btn-score" onclick="adjustKnockoutScore(${state.knockoutMatches.length-1}, ${idx}, 1, -1)">-</button>
+                            <div class="score-display ${p1Win?'winner':''}">${m.s1}</div>
+                            <button class="btn-score" onclick="adjustKnockoutScore(${state.knockoutMatches.length-1}, ${idx}, 1, 1)">+</button>
+                        </div>
+                        <div class="match-vs">VS</div>
+                        <div class="score-wrapper">
+                            <button class="btn-score" onclick="adjustKnockoutScore(${state.knockoutMatches.length-1}, ${idx}, 2, -1)">-</button>
+                            <div class="score-display ${p2Win?'winner':''}">${m.s2}</div>
+                            <button class="btn-score" onclick="adjustKnockoutScore(${state.knockoutMatches.length-1}, ${idx}, 2, 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="match-player" style="text-align:left; color:${p2Win?'var(--success)':'white'}; opacity:${m.winner && !p2Win ? 0.5 : 1}">
+                        ${m.p2.name} ${p2Win ? '<div style="font-size:0.7rem">GANADOR</div>' : ''}
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    // Avanzar a la siguiente ronda
+    function advanceRound() {
+        const curRound = state.knockoutMatches[state.knockoutMatches.length - 1];
+        // Validar que todos los partidos tengan ganador
+        if(curRound.matches.some(m => !m.winner)) return alert("Faltan combates por terminar (4 puntos min).");
+
+        // Caso: Ya terminó la final -> Ir a pantalla de ganador
+        if (curRound.matches.length === 1 && !curRound.matches[0].isThird) {
+            state.phase = 'winner'; saveState(); restoreUI(); return;
+        }
+        if (curRound.matches.some(m => m.isFinal)) {
+             state.phase = 'winner'; saveState(); restoreUI(); return;
+        }
+
+        const winners = curRound.matches.map(m => m.winner);
+        
+        // Caso especial: SEMIFINALES -> Generar Final y 3er Puesto
+        if (curRound.matches.length === 2) { 
+            const m1 = curRound.matches[0]; const m2 = curRound.matches[1];
+            const w1 = m1.winner; const w2 = m2.winner;
+            // Los perdedores van al 3er puesto
+            const l1 = m1.winner.id === m1.p1.id ? m1.p2 : m1.p1;
+            const l2 = m2.winner.id === m2.p1.id ? m2.p2 : m2.p1;
+            
+            state.knockoutMatches.push({ round: state.knockoutMatches.length + 1, label: "Finales", matches: [
+                { id: 'FINAL', p1: w1, p2: w2, s1: 0, s2: 0, winner: null, isFinal: true },
+                { id: 'THIRD', p1: l1, p2: l2, s1: 0, s2: 0, winner: null, isThird: true }
+            ]});
+        } else {
+            // Caso normal: Generar siguiente ronda con los ganadores
+            const nextMatches = [];
+            for(let i=0; i<winners.length; i+=2) {
+                nextMatches.push({ id: `KO_R${state.knockoutMatches.length}_${i}`, p1: winners[i], p2: winners[i+1], s1:0, s2:0, winner:null });
+            }
+            state.knockoutMatches.push({ round: state.knockoutMatches.length + 1, matches: nextMatches });
+        }
+        saveState(); restoreUI();
+    }
+
+    function renderWinnerView() {
+        const finalRound = state.knockoutMatches[state.knockoutMatches.length - 1];
+        const finalMatch = finalRound.matches.find(m => m.isFinal) || finalRound.matches[0];
+        const bronzeMatch = finalRound.matches.find(m => m.isThird);
+        
+        // Mostrar Campeón
+        if(finalMatch && finalMatch.winner) document.getElementById('champion-name').innerText = finalMatch.winner.name;
+        // Mostrar 3er Lugar si existe
+        if(bronzeMatch && bronzeMatch.winner) {
+            document.getElementById('third-place-container').classList.remove('hidden');
+            document.getElementById('third-place-name').innerText = bronzeMatch.winner.name;
+        } else {
+            document.getElementById('third-place-container').classList.add('hidden');
+        }
+    }
+
+    // --- UTILIDAD: DESCARGAR COPIA DE SEGURIDAD ---
+    function downloadBackup() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+        const a = document.createElement('a');
+        a.href = dataStr; a.download = "torneo_bey_" + new Date().toISOString().slice(0,10) + ".json";
+        a.click();
+    }
+    
+    // Muestra cartelito flotante de "Guardado"
+    function showToast() {
+        const t = document.getElementById('toast');
+        t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 1500);
+    }
+</script>
+</body>
+</html>
