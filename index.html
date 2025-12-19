@@ -15,7 +15,6 @@
     <header class="header">
       <div class="header-left">
         <div class="brand">
-          <!-- Icono escudo -->
           <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
           </svg>
@@ -63,13 +62,7 @@
           <div class="config-row">
             <label class="config-label" for="group-slider">Grupos:</label>
             <div class="config-control">
-              <input
-                type="range"
-                id="group-slider"
-                min="1"
-                max="1"
-                value="1"
-              />
+              <input type="range" id="group-slider" min="1" max="1" value="1" />
               <span id="group-count-display" class="pill">1</span>
             </div>
           </div>
@@ -132,9 +125,7 @@
                 <th class="text-center">Pts</th>
               </tr>
             </thead>
-            <tbody id="global-standings-body">
-              <!-- JS populated -->
-            </tbody>
+            <tbody id="global-standings-body"></tbody>
           </table>
         </div>
 
@@ -145,9 +136,7 @@
         </div>
       </div>
 
-      <div id="groups-container" class="groups-grid">
-        <!-- JS populated -->
-      </div>
+      <div id="groups-container" class="groups-grid"></div>
     </section>
 
     <!-- === VIEW 3: KNOCKOUT === -->
@@ -158,9 +147,7 @@
         <span id="round-badge" class="badge">Ronda 1</span>
       </div>
 
-      <div id="bracket-container">
-        <!-- JS populated -->
-      </div>
+      <div id="bracket-container"></div>
 
       <button id="btn-advance" class="btn btn-primary btn-full btn-xl mt-20" type="button">
         Confirmar Resultados y Avanzar

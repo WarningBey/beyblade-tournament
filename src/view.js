@@ -7,7 +7,14 @@ export function getEls() {
       knockout: document.getElementById("view-knockout"),
       winner: document.getElementById("view-winner"),
     },
+
+    // Header
+    btnBackup: document.getElementById("btn-backup"),
+    btnHome: document.getElementById("btn-home"),
+
+    // Registration
     inputPlayer: document.getElementById("input-player"),
+    btnAddPlayer: document.getElementById("btn-add-player"),
     playersList: document.getElementById("players-list"),
     playerCounter: document.getElementById("player-counter"),
     btnStart: document.getElementById("btn-start"),
@@ -16,15 +23,27 @@ export function getEls() {
     groupCountDisplay: document.getElementById("group-count-display"),
     roundsInput: document.getElementById("rounds-input"),
     roundsMaxMsg: document.getElementById("rounds-max-msg"),
+    groupInfo: document.getElementById("group-info"),
+
+    // Groups
     groupsContainer: document.getElementById("groups-container"),
     globalStandingsBody: document.getElementById("global-standings-body"),
     knockoutSizeSelect: document.getElementById("knockout-size-select"),
+    btnToKnockout: document.getElementById("btn-to-knockout"),
+
+    // Knockout
     bracketContainer: document.getElementById("bracket-container"),
     roundBadge: document.getElementById("round-badge"),
-    toast: document.getElementById("toast"),
+    btnAdvance: document.getElementById("btn-advance"),
+
+    // Winner
     championName: document.getElementById("champion-name"),
     thirdPlaceContainer: document.getElementById("third-place-container"),
     thirdPlaceName: document.getElementById("third-place-name"),
+    btnNewTournament: document.getElementById("btn-new-tournament"),
+
+    // Toast
+    toast: document.getElementById("toast"),
   };
 }
 
@@ -34,5 +53,12 @@ export function hideAllViews(els) {
 
 export function showView(els, phase) {
   hideAllViews(els);
-  els.views[phase].classList.remove("hidden");
+  els.views[phase]?.classList.remove("hidden");
+}
+
+export function showToast(els, msg = "Guardado") {
+  if (!els.toast) return;
+  els.toast.textContent = msg;
+  els.toast.classList.add("show");
+  window.setTimeout(() => els.toast.classList.remove("show"), 1500);
 }
