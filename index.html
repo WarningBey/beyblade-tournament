@@ -3,28 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BeyManager Ultimate - League Mode</title>
+    <title>Warning BeyManager V11.9</title>
     <meta name="theme-color" content="#0f172a">
     <style>
-        /* --- ESTILOS CSS --- */
+        /* =========================================
+           1. VARIABLES Y ESTILOS GLOBALES
+           ========================================= */
         :root {
-            --bg-dark: #0f172a;
-            --bg-card: #1e293b;
-            --bg-input: #020617;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent: #3b82f6;
+            --bg-dark: #0f172a;       /* Fondo principal */
+            --bg-card: #1e293b;       /* Fondo de tarjetas */
+            --bg-input: #020617;      /* Fondo de inputs */
+            --text-main: #f8fafc;     /* Texto blanco */
+            --text-muted: #94a3b8;    /* Texto gris */
+            --accent: #3b82f6;        /* Azul primario */
             --accent-hover: #2563eb;
-            --success: #22c55e;
-            --gold: #eab308;
-            --bronze: #d97706;
-            --border: #334155;
-            --danger: #ef4444;
-            --cut-line: #f43f5e;
-            --whatsapp: #25D366;
-            --pt-color: #a855f7; /* Color violeta para los Puntos de Torneo */
+            --success: #22c55e;       /* Verde éxito */
+            --gold: #eab308;          /* Dorado (1er Lugar) */
+            --silver: #cbd5e1;        /* Plata (2do Lugar) */
+            --bronze: #d97706;        /* Bronce (3er Lugar) */
+            --border: #334155;        /* Bordes sutiles */
+            --danger: #ef4444;        /* Rojo peligro/borrar */
+            --cut-line: #f43f5e;      /* Línea de corte eliminatorio */
+            --whatsapp: #25D366;      /* Verde WhatsApp */
+            --pt-color: #a855f7;      /* Violeta para Puntos de Torneo */
         }
+        
         * { box-sizing: border-box; }
+        
         body {
             font-family: system-ui, -apple-system, sans-serif;
             background-color: var(--bg-dark);
@@ -34,7 +39,9 @@
             user-select: none;
         }
 
-        /* --- UTILIDADES --- */
+        /* =========================================
+           2. CLASES DE UTILIDAD
+           ========================================= */
         .container { max-width: 1100px; margin: 0 auto; position: relative; z-index: 10; }
         .hidden { display: none !important; }
         .text-center { text-align: center; }
@@ -50,7 +57,9 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3); 
         }
 
-        /* --- BOTONES --- */
+        /* =========================================
+           3. BOTONES
+           ========================================= */
         .btn { 
             cursor: pointer; border: none; padding: 10px 16px; border-radius: 8px; 
             font-weight: bold; color: white; transition: 0.2s; 
@@ -69,9 +78,10 @@
         
         .btn-icon-only { width: 36px; height: 36px; padding: 0; border-radius: 50%; font-size: 1.2rem; }
         .btn-whatsapp { background-color: var(--whatsapp); color: white; font-size: 0.8rem; }
-        .btn-file { position: relative; overflow: hidden; }
 
-        /* --- INPUTS --- */
+        /* =========================================
+           4. INPUTS Y ESTILOS
+           ========================================= */
         .input-dark { 
             background-color: var(--bg-input); border: 1px solid var(--border); color: white; 
             padding: 12px; border-radius: 8px; width: 100%; font-size: 1rem; 
@@ -83,15 +93,15 @@
             background-repeat: no-repeat; background-position: right 10px center; background-size: 16px; padding-right: 30px;
         }
 
-        /* --- EDICIÓN Y FANTASMAS --- */
         .is-ghost { font-style: italic; opacity: 0.6; color: var(--text-muted) !important; }
-        
         .editable-name { cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: color 0.2s; }
         .editable-name:hover { color: var(--accent); }
         .edit-icon { opacity: 0.3; font-size: 0.8em; }
         .editable-name:hover .edit-icon { opacity: 1; }
 
-        /* --- TABLAS --- */
+        /* =========================================
+           5. TABLAS
+           ========================================= */
         .standings-container { overflow-x: auto; margin-bottom: 20px; border: 1px solid var(--border); border-radius: 8px; }
         .global-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         .global-table th { background: var(--bg-input); padding: 10px; text-align: left; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; }
@@ -100,23 +110,43 @@
         .global-table tr.qualified td:first-child { border-left: 3px solid var(--success); }
         .global-table tr.cut-line td { border-bottom: 2px dashed var(--cut-line); }
 
-        /* --- GRID DE GRUPOS --- */
+        /* =========================================
+           6. GRUPOS Y PARTIDOS
+           ========================================= */
         .groups-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .group-header { margin: 0 0 10px 0; border-bottom: 1px solid var(--border); padding-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
         .mini-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-bottom: 10px; }
         .mini-table th { text-align: left; color: var(--text-muted); padding: 4px; font-size: 0.75rem; }
         .mini-table td { padding: 4px; border-bottom: 1px solid #1e293b; }
+        
         .match-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
         .match-row:last-child { border-bottom: none; }
         .player-name-match { font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 90px; }
         
+        /* NUEVO: Separador de Rondas */
+        .round-separator {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 4px 10px;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            font-weight: bold;
+            border-left: 3px solid var(--accent);
+        }
+
         .score-wrapper { display: flex; align-items: center; gap: 5px; }
         .btn-score { width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main); font-weight: bold; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; touch-action: manipulation; }
         .btn-score:active { background: var(--accent); border-color: var(--accent); }
         .score-display { width: 30px; text-align: center; font-size: 1.2rem; font-weight: bold; pointer-events: none; }
         .score-display.winner { color: var(--success); text-shadow: 0 0 10px rgba(34, 197, 94, 0.4); }
 
-        /* --- BRACKETS --- */
+        /* =========================================
+           7. BRACKETS
+           ========================================= */
         .match-card { background: var(--bg-card); margin-bottom: 12px; padding: 15px; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
         .match-card.final-match { border: 2px solid var(--gold); box-shadow: 0 0 15px rgba(234, 179, 8, 0.2); }
         .match-card.bronze-match { border: 2px solid var(--bronze); }
@@ -124,11 +154,12 @@
         .match-body { display: flex; align-items: center; justify-content: space-between; }
         .match-player { flex: 1; font-weight: bold; font-size: 1rem; }
         
-        /* --- ESTILOS GANADOR --- */
         .crown-icon { font-size: 4rem; margin-bottom: -10px; animation: floatCrown 2s ease-in-out infinite; }
         @keyframes floatCrown { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
-        /* --- MODAL SORTEO --- */
+        /* =========================================
+           8. ELEMENTOS FLOTANTES
+           ========================================= */
         #toss-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         #toss-modal.active { opacity: 1; pointer-events: auto; }
         .toss-content { background: var(--bg-card); padding: 30px; border-radius: 15px; border: 1px solid var(--border); text-align: center; width: 300px; transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
@@ -137,10 +168,8 @@
         .spinning { animation: spinCoin 0.2s infinite linear; }
         @keyframes spinCoin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
 
-        /* --- CANVAS CONFETTI --- */
         #confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
 
-        /* --- CONFIG --- */
         header { margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
         .player-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid var(--border); background: var(--bg-input); margin-bottom: 5px; border-radius: 6px; }
         .config-block { background: rgba(51, 65, 85, 0.3); padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px solid var(--border); }
@@ -149,7 +178,6 @@
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--success); color: #000; padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 200; }
         .toast.show { opacity: 1; }
 
-        /* --- RESPONSIVE --- */
         @media (max-width: 768px) {
             .btn { width: 100%; }
             header .flex-between { flex-direction: column; gap: 10px; align-items: stretch; }
@@ -180,7 +208,9 @@
         <div class="flex-between gap-10 header-tools">
             <div style="display: flex; align-items: center; gap: 8px;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                <h1 style="margin:0; font-style:italic; font-size:1.5rem; letter-spacing:-1px;">WARNING BEY<span style="color:var(--accent)">MANAGER</span></h1>
+                <h1 style="margin:0; font-style:italic; font-size:1.5rem; letter-spacing:-1px;">
+                    <span style="color:var(--danger)">WARNING</span> BEY<span style="color:var(--accent)">MANAGER</span>
+                </h1>
             </div>
             
             <div style="display:flex; gap:10px;">
@@ -200,6 +230,7 @@
             <div style="display:flex; gap:5px; flex:1;">
                 <button class="btn btn-ghost" onclick="document.getElementById('file-upload').click()" style="flex:1;">📂 Cargar</button>
                 <button class="btn btn-ghost" onclick="downloadBackup()" style="flex:1;">💾 Exportar</button>
+                <button class="btn btn-ghost" onclick="goBackStep()" style="flex:1; border-color:var(--gold); color:var(--gold);">⬅ Volver</button>
             </div>
             <button class="btn btn-ghost" onclick="goHome()" style="color:var(--danger); border-color:var(--danger); font-weight:bold;">🏠 Inicio</button>
         </div>
@@ -325,8 +356,14 @@
             NOMBRE
         </div>
         
-        <div id="third-place-container" class="hidden" style="margin-top:30px; padding-top:20px; border-top:1px solid var(--border);">
-             <div style="font-size:2rem;">🥉</div>
+        <div id="second-place-container" class="hidden" style="margin-top:20px; padding-top:10px;">
+             <div style="font-size:2rem;">🥈</div>
+             <h3 style="color:var(--silver); margin:5px 0;">2do Lugar</h3>
+             <div id="second-place-name" style="font-size:1.8rem; font-weight:bold; color:white;"></div>
+        </div>
+
+        <div id="third-place-container" class="hidden" style="margin-top:20px; padding-top:10px;">
+             <div style="font-size:1.5rem;">🥉</div>
              <h3 style="color:var(--bronze); margin:5px 0;">3er Lugar</h3>
              <div id="third-place-name" style="font-size:1.5rem; font-weight:bold; color:white;"></div>
         </div>
@@ -340,9 +377,9 @@
 <div id="toast" class="toast">Guardado</div>
 
 <script>
-    // ==========================================
-    // MOTOR DE AUDIO (SINTETIZADOR) 🔊
-    // ==========================================
+    /* =========================================
+       1. MOTOR DE AUDIO (SOUND FX)
+       ========================================= */
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     let isMuted = false;
 
@@ -355,63 +392,43 @@
     function playTone(freq, type, duration, delay = 0) {
         if(isMuted) return;
         if(audioCtx.state === 'suspended') audioCtx.resume();
-        
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        
         osc.type = type;
         osc.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
-        
         gain.gain.setValueAtTime(0.1, audioCtx.currentTime + delay);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + duration);
-        
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-        
         osc.start(audioCtx.currentTime + delay);
         osc.stop(audioCtx.currentTime + delay + duration);
     }
 
-    // Sonidos predefinidos
     const SoundFX = {
         click: () => playTone(800, 'sine', 0.1),
         undo: () => playTone(300, 'triangle', 0.1),
-        success: () => { // Acorde simple C Mayor
-            playTone(523.25, 'sine', 0.2, 0);
-            playTone(659.25, 'sine', 0.2, 0.1);
-            playTone(783.99, 'sine', 0.4, 0.2);
-        },
-        winMatch: () => { // Fanfarria corta
-            playTone(523.25, 'square', 0.1, 0);
-            playTone(523.25, 'square', 0.1, 0.1);
-            playTone(783.99, 'square', 0.4, 0.2);
-        },
-        champion: () => { // Fanfarria larga
-            [523, 659, 783, 1046, 783, 1046].forEach((f, i) => playTone(f, 'sawtooth', 0.3, i * 0.15));
-        }
+        success: () => { playTone(523.25, 'sine', 0.2, 0); playTone(659.25, 'sine', 0.2, 0.1); playTone(783.99, 'sine', 0.4, 0.2); },
+        winMatch: () => { playTone(523.25, 'square', 0.1, 0); playTone(523.25, 'square', 0.1, 0.1); playTone(783.99, 'square', 0.4, 0.2); },
+        champion: () => { [523, 659, 783, 1046, 783, 1046].forEach((f, i) => playTone(f, 'sawtooth', 0.3, i * 0.15)); }
     };
 
-    // ==========================================
-    // SISTEMA DE SORTEO (RULETA) 🎲
-    // ==========================================
+    /* =========================================
+       2. UTILIDADES VISUALES (Sorteo, Confeti)
+       ========================================= */
     function openToss() {
         document.getElementById('toss-modal').classList.add('active');
         document.getElementById('toss-result').innerText = "...";
         document.getElementById('coin-icon').classList.remove('spinning');
     }
     
-    function closeToss() {
-        document.getElementById('toss-modal').classList.remove('active');
-    }
+    function closeToss() { document.getElementById('toss-modal').classList.remove('active'); }
 
     function spinToss() {
         const icon = document.getElementById('coin-icon');
         const res = document.getElementById('toss-result');
-        
         icon.classList.add('spinning');
         res.innerText = "Girando...";
         SoundFX.click();
-
         setTimeout(() => {
             icon.classList.remove('spinning');
             const winner = Math.random() > 0.5 ? "JUGADOR 1" : "JUGADOR 2";
@@ -421,18 +438,13 @@
         }, 1000);
     }
 
-    // ==========================================
-    // SISTEMA DE CONFETI
-    // ==========================================
+    // --- CONFETI ---
     const confettiCanvas = document.getElementById('confetti-canvas');
     const ctx = confettiCanvas.getContext('2d');
     let confettiParticles = [];
     let confettiAnimationId = null;
 
-    function resizeCanvas() {
-        confettiCanvas.width = window.innerWidth;
-        confettiCanvas.height = window.innerHeight;
-    }
+    function resizeCanvas() { confettiCanvas.width = window.innerWidth; confettiCanvas.height = window.innerHeight; }
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
@@ -461,9 +473,7 @@
                 if (p.y > confettiCanvas.height) confettiParticles.splice(index, 1);
             });
             confettiAnimationId = requestAnimationFrame(updateConfetti);
-        } else {
-            cancelAnimationFrame(confettiAnimationId); confettiAnimationId = null;
-        }
+        } else { cancelAnimationFrame(confettiAnimationId); confettiAnimationId = null; }
     }
 
     function fireConfettiBurst() {
@@ -489,15 +499,19 @@
         confettiParticles = []; ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
     }
 
-    // ==========================================
-    // LÓGICA DEL TORNEO (MODIFICADA PARA LIGA)
-    // ==========================================
-    const POINTS_TO_WIN = 4; 
-    const STORAGE_KEY = 'bey_manager_ult_v11_league';
+    /* =========================================
+       3. ESTADO GLOBAL
+       ========================================= */
+    const POINTS_TO_WIN = 4;
+    const STORAGE_KEY = 'bey_manager_ult_v11_9_refined';
     
     const initialState = {
-        players: [], groups: [], knockoutMatches: [], 
-        desiredGroupCount: 1, phase: 'registration', roundsSetting: 1   
+        players: [], 
+        groups: [], 
+        knockoutMatches: [], 
+        desiredGroupCount: 1, 
+        phase: 'registration', 
+        roundsSetting: 1   
     };
     
     let state = JSON.parse(JSON.stringify(initialState));
@@ -522,6 +536,9 @@
         } else { restoreUI(); }
     }
 
+    /* =========================================
+       4. NAVEGACIÓN
+       ========================================= */
     function goHome() {
         if(confirm("¿Volver al inicio? Se perderá el progreso.")) hardReset(true);
     }
@@ -529,6 +546,18 @@
     function hardReset(force = false) {
         localStorage.removeItem(STORAGE_KEY);
         window.location.reload(); 
+    }
+
+    function goBackStep() {
+        if(state.phase === 'registration') return;
+        if(!confirm("¿Volver a la fase anterior? \n\nNOTA: Tus datos actuales se conservan, pero si REGENERAS una fase, se sobrescribirá.")) return;
+
+        if(state.phase === 'winner') { state.phase = 'knockout'; stopConfetti(); } 
+        else if(state.phase === 'knockout') { state.phase = 'groups'; } 
+        else if(state.phase === 'groups') { state.phase = 'registration'; }
+
+        saveState();
+        restoreUI();
     }
 
     function restoreUI() {
@@ -601,13 +630,16 @@
         }
     }
 
+    /* =========================================
+       5. REGISTRO
+       ========================================= */
     function addPlayer() {
         const input = document.getElementById('input-player');
         const name = input.value.trim();
         if(!name) return;
         state.players.push({ id: Date.now(), name });
         input.value = ''; input.focus(); 
-        SoundFX.click(); // Sound
+        SoundFX.click(); 
         
         const maxGroups = Math.max(1, Math.floor(state.players.length / 2));
         if(state.desiredGroupCount > maxGroups) state.desiredGroupCount = maxGroups;
@@ -652,7 +684,6 @@
     function updateGroupCount(val) {
         state.desiredGroupCount = parseInt(val);
         document.getElementById('group-count-display').innerText = val;
-        
         const perGroup = state.players.length / state.desiredGroupCount;
         const maxP = Math.ceil(perGroup);
         const maxRounds = maxP - 1 + (maxP % 2 !== 0 ? 1 : 0);
@@ -669,6 +700,9 @@
         if(parseInt(input.value) < 1) input.value = 1;
     }
 
+    /* =========================================
+       6. GRUPOS (LÓGICA CORE)
+       ========================================= */
     function generateGroups() {
         const shuffled = [...state.players].sort(() => 0.5 - Math.random());
         const numGroups = state.desiredGroupCount;
@@ -680,10 +714,7 @@
 
         shuffled.forEach((p, i) => {
             state.groups[i % numGroups].players.push({
-                ...p, 
-                // Inicializamos estadísticas con la nueva métrica tourneyPts
-                stats: {wins:0, pts:0, ptsAgainst:0, tourneyPts:0}, 
-                isGhost: false
+                ...p, stats: {wins:0, pts:0, ptsAgainst:0, tourneyPts:0}, isGhost: false
             });
         });
 
@@ -737,29 +768,27 @@
         generateGroups();
     }
 
-    // --- FUNCIÓN CLAVE: CALCULO DE PUNTOS DE TORNEO ---
     function adjustScore(gId, mId, playerNum, delta) {
         const group = state.groups.find(g => g.id === gId);
         const match = group.matches.find(m => m.id === mId);
         
-        // Sonidos
+        if (delta > 0) {
+            if (playerNum === 1 && match.s2 >= POINTS_TO_WIN) { if(match.s1 >= 3) return; }
+            if (playerNum === 2 && match.s1 >= POINTS_TO_WIN) { if(match.s2 >= 3) return; }
+        }
+
         if(delta > 0) SoundFX.click(); else SoundFX.undo();
 
         if(playerNum === 1) match.s1 = Math.max(0, Math.min(6, match.s1 + delta));
         else match.s2 = Math.max(0, Math.min(6, match.s2 + delta));
         match.played = true;
 
-        // Verificar victoria inmediata (Visual y Sonoro)
         if((playerNum === 1 && match.s1 >= POINTS_TO_WIN) || (playerNum === 2 && match.s2 >= POINTS_TO_WIN)) {
              SoundFX.winMatch();
         }
 
-        // RECALCULO GENERAL DE ESTADÍSTICAS
         group.players.forEach(p => { 
-            p.stats.wins = 0; 
-            p.stats.pts = 0; // PF (Puntos a Favor)
-            p.stats.ptsAgainst = 0; // PC (Puntos en Contra)
-            p.stats.tourneyPts = 0; // PT (Puntos de Torneo - NUEVO)
+            p.stats.wins = 0; p.stats.pts = 0; p.stats.ptsAgainst = 0; p.stats.tourneyPts = 0;
         });
 
         group.matches.forEach(m => {
@@ -767,57 +796,34 @@
             const p2 = group.players.find(p => p.id === m.p2Id);
             
             if(p1 && p2) {
-                // Sumar PF y PC
-                p1.stats.pts += m.s1; 
-                p2.stats.pts += m.s2;
-                p1.stats.ptsAgainst += m.s2; 
-                p2.stats.ptsAgainst += m.s1;
+                p1.stats.pts += m.s1; p2.stats.pts += m.s2;
+                p1.stats.ptsAgainst += m.s2; p2.stats.ptsAgainst += m.s1;
                 
-                // Determinar Ganador del Combate
                 const p1Winner = m.s1 >= POINTS_TO_WIN && m.s1 > m.s2;
                 const p2Winner = m.s2 >= POINTS_TO_WIN && m.s2 > m.s1;
 
-                // Sumar Victorias
                 if (p1Winner) p1.stats.wins++;
                 if (p2Winner) p2.stats.wins++;
 
-                // LÓGICA DE PUNTOS DE TORNEO (3 por victoria, 1 por derrota/participación)
-                // Se asume participación si alguien ganó el set (partido finalizado)
                 if (p1Winner || p2Winner) {
-                    if (p1Winner) {
-                        p1.stats.tourneyPts += 3;
-                        p2.stats.tourneyPts += 1; // 1 punto por participar (perder)
-                    } else {
-                        p2.stats.tourneyPts += 3;
-                        p1.stats.tourneyPts += 1; // 1 punto por participar (perder)
-                    }
+                    if (p1Winner) { p1.stats.tourneyPts += 3; p2.stats.tourneyPts += 1; } 
+                    else { p2.stats.tourneyPts += 3; p1.stats.tourneyPts += 1; }
                 }
             }
         });
         saveState(); renderGroups(); renderGlobalStandings(); 
     }
 
-    // --- NUEVO COMPARADOR (PT > PF > PC) ---
     function comparePlayers(a, b) {
-        // 1. Puntos de Torneo (PT) - Prioridad absoluta
-        const ptA = a.stats.tourneyPts || 0;
-        const ptB = b.stats.tourneyPts || 0;
+        const ptA = a.stats.tourneyPts || 0; const ptB = b.stats.tourneyPts || 0;
         if (ptB !== ptA) return ptB - ptA;
-
-        // 2. Puntos a Favor (PF)
         if (b.stats.pts !== a.stats.pts) return b.stats.pts - a.stats.pts;
-
-        // 3. Puntos en Contra (PC) - Menor es mejor
-        const pcA = a.stats.ptsAgainst || 0;
-        const pcB = b.stats.ptsAgainst || 0;
+        const pcA = a.stats.ptsAgainst || 0; const pcB = b.stats.ptsAgainst || 0;
         if (pcA !== pcB) return pcA - pcB; 
-
-        // 4. Desempate final por ID
         if (String(a.id) !== String(b.id)) return String(a.id) > String(b.id) ? 1 : -1;
         return 0;
     }
 
-    // --- FUNCIÓN COPIAR WHATSAPP 📱 ---
     function copyStandingsToClipboard() {
         let allPlayers = [];
         state.groups.forEach(g => g.players.forEach(p => allPlayers.push({ ...p, groupName: g.name })));
@@ -829,17 +835,12 @@
 
         allPlayers.forEach((p, i) => {
             if(i === cutoff) text += "------------------\n";
-            const icon = i < cutoff ? "✅" : "❌";
             text += `${i+1}. ${p.name} -> ${p.stats.tourneyPts}pts (PF:${p.stats.pts})\n`;
         });
-
         text += "\n_Generado con BeyManager_";
 
         navigator.clipboard.writeText(text)
-            .then(() => {
-                showToast("Copiado al portapapeles"); 
-                SoundFX.success();
-            })
+            .then(() => { showToast("Copiado al portapapeles"); SoundFX.success(); })
             .catch(err => alert("Error al copiar (Permiso denegado)"));
     }
 
@@ -850,9 +851,7 @@
         
         let allPlayers = [];
         state.groups.forEach(g => {
-            g.players.forEach(p => {
-                allPlayers.push({ ...p, groupName: g.name });
-            });
+            g.players.forEach(p => { allPlayers.push({ ...p, groupName: g.name }); });
         });
 
         allPlayers.sort(comparePlayers);
@@ -866,16 +865,10 @@
             const ghostClass = p.isGhost ? 'is-ghost' : '';
             const idSafe = typeof p.id === 'string' ? `'${p.id}'` : p.id;
             
-            // Renderizado con nuevas columnas PT, PF, PC
             tr.innerHTML = `
                 <td style="color:var(--text-muted); font-weight:bold;">${idx + 1}</td>
-                <td>
-                    <span class="editable-name ${ghostClass}" onclick="editPlayerName(${idSafe})">
-                        ${p.name} <span class="edit-icon">✎</span>
-                    </span>
-                </td>
+                <td><span class="editable-name ${ghostClass}" onclick="editPlayerName(${idSafe})">${p.name} <span class="edit-icon">✎</span></span></td>
                 <td style="font-size:0.8rem; color:var(--text-muted);">${p.groupName}</td>
-                
                 <td class="text-center" style="color:var(--pt-color); font-weight:bold; font-size:1.1rem;">${p.stats.tourneyPts || 0}</td>
                 <td class="text-center" style="color:var(--gold); font-family:monospace;">${p.stats.pts}</td>
                 <td class="text-center" style="color:var(--text-muted); font-family:monospace;">${p.stats.ptsAgainst || 0}</td>
@@ -891,61 +884,63 @@
 
         state.groups.forEach(g => {
             const sorted = [...g.players].sort(comparePlayers);
-            let matchesHTML = g.matches.length ? '' : '<div class="text-center" style="padding:10px; color:gray;">Sin partidos</div>';
             
-            g.matches.forEach(m => {
-                const done = m.s1 >= POINTS_TO_WIN || m.s2 >= POINTS_TO_WIN;
-                const p1Win = done && m.s1 > m.s2;
-                const p2Win = done && m.s2 > m.s1;
+            // --- NUEVO: Agrupación visual por Rondas ---
+            let matchesHTML = '';
+            if (g.matches.length === 0) {
+                matchesHTML = '<div class="text-center" style="padding:10px; color:gray;">Sin partidos</div>';
+            } else {
+                let currentRound = -1;
+                g.matches.forEach(m => {
+                    // Extraer número de ronda del ID (formato: "G-R#-P1-P2")
+                    let rNum = -1;
+                    const parts = m.id.split('-');
+                    if (parts.length > 1 && parts[1].startsWith('R')) {
+                        rNum = parseInt(parts[1].substring(1));
+                    }
 
-                matchesHTML += `
-                <div class="match-row" style="background: ${done ? 'rgba(0,0,0,0.2)' : 'transparent'}">
-                    <div style="flex:1; text-align:right; font-weight:${p1Win?'bold':'normal'}; color:${p1Win?'var(--success)':'white'};" class="player-name-match ${m.p1Ghost ? 'is-ghost' : ''}">${m.p1Name}</div>
-                    <div style="display:flex; gap:8px; align-items:center; margin:0 10px;">
-                        <div class="score-wrapper">
-                            <button class="btn-score" onclick="adjustScore(${g.id}, '${m.id}', 1, -1)">-</button>
-                            <div class="score-display ${p1Win?'winner':''}">${m.s1}</div>
-                            <button class="btn-score" onclick="adjustScore(${g.id}, '${m.id}', 1, 1)">+</button>
+                    // Insertar separador si cambia la ronda
+                    if (rNum !== -1 && rNum !== currentRound) {
+                        matchesHTML += `<div class="round-separator">Ronda ${rNum + 1}</div>`;
+                        currentRound = rNum;
+                    }
+
+                    const done = m.s1 >= POINTS_TO_WIN || m.s2 >= POINTS_TO_WIN;
+                    const p1Win = done && m.s1 > m.s2;
+                    const p2Win = done && m.s2 > m.s1;
+
+                    matchesHTML += `
+                    <div class="match-row" style="background: ${done ? 'rgba(0,0,0,0.2)' : 'transparent'}">
+                        <div style="flex:1; text-align:right; font-weight:${p1Win?'bold':'normal'}; color:${p1Win?'var(--success)':'white'};" class="player-name-match ${m.p1Ghost ? 'is-ghost' : ''}">${m.p1Name}</div>
+                        <div style="display:flex; gap:8px; align-items:center; margin:0 10px;">
+                            <div class="score-wrapper">
+                                <button class="btn-score" onclick="adjustScore(${g.id}, '${m.id}', 1, -1)">-</button>
+                                <div class="score-display ${p1Win?'winner':''}">${m.s1}</div>
+                                <button class="btn-score" onclick="adjustScore(${g.id}, '${m.id}', 1, 1)">+</button>
+                            </div>
+                            <span style="color:gray; font-weight:bold;">:</span>
+                            <div class="score-wrapper">
+                                <button class="btn-score" onclick="adjustScore(${g.id}, '${m.id}', 2, -1)">-</button>
+                                <div class="score-display ${p2Win?'winner':''}">${m.s2}</div>
+                                <button class="btn-score" onclick="adjustScore(${g.id}, '${m.id}', 2, 1)">+</button>
+                            </div>
                         </div>
-                        <span style="color:gray; font-weight:bold;">:</span>
-                        <div class="score-wrapper">
-                            <button class="btn-score" onclick="adjustScore(${g.id}, '${m.id}', 2, -1)">-</button>
-                            <div class="score-display ${p2Win?'winner':''}">${m.s2}</div>
-                            <button class="btn-score" onclick="adjustScore(${g.id}, '${m.id}', 2, 1)">+</button>
-                        </div>
-                    </div>
-                    <div style="flex:1; text-align:left; font-weight:${p2Win?'bold':'normal'}; color:${p2Win?'var(--success)':'white'};" class="player-name-match ${m.p2Ghost ? 'is-ghost' : ''}">${m.p2Name}</div>
-                </div>`;
-            });
+                        <div style="flex:1; text-align:left; font-weight:${p2Win?'bold':'normal'}; color:${p2Win?'var(--success)':'white'};" class="player-name-match ${m.p2Ghost ? 'is-ghost' : ''}">${m.p2Name}</div>
+                    </div>`;
+                });
+            }
 
             const div = document.createElement('div');
             div.className = 'card';
             div.innerHTML = `
-                <div class="group-header">
-                    <h3 style="margin:0;">${g.name}</h3>
-                </div>
+                <div class="group-header"><h3 style="margin:0;">${g.name}</h3></div>
                 <table class="mini-table">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Blader</th>
-                            <th title="Puntos Torneo" style="color:var(--pt-color)">PT</th>
-                            <th title="Puntos Favor" style="color:var(--gold)">PF</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>#</th><th>Blader</th><th title="Puntos Torneo" style="color:var(--pt-color)">PT</th><th title="Puntos Favor" style="color:var(--gold)">PF</th></tr></thead>
                     <tbody>
-                        ${sorted.map((p,i) => `
-                            <tr>
-                                <td style="color:gray;">${i+1}</td>
-                                <td style="font-weight:bold;" class="${p.isGhost ? 'is-ghost' : ''}">${p.name}</td>
-                                <td style="color:var(--pt-color); font-weight:bold;">${p.stats.tourneyPts || 0}</td>
-                                <td style="color:var(--gold)">${p.stats.pts}</td>
-                            </tr>`).join('')}
+                        ${sorted.map((p,i) => `<tr><td style="color:gray;">${i+1}</td><td style="font-weight:bold;" class="${p.isGhost ? 'is-ghost' : ''}">${p.name}</td><td style="color:var(--pt-color); font-weight:bold;">${p.stats.tourneyPts || 0}</td><td style="color:var(--gold)">${p.stats.pts}</td></tr>`).join('')}
                     </tbody>
                 </table>
-                <div style="margin-top:10px; border-top:1px solid #334155; padding-top:10px;">
-                    ${matchesHTML}
-                </div>
+                <div style="margin-top:10px; border-top:1px solid #334155; padding-top:10px;">${matchesHTML}</div>
             `;
             container.appendChild(div);
         });
@@ -965,6 +960,9 @@
         if(powers.length > 0) select.value = powers[powers.length - 1];
     }
 
+    /* =========================================
+       7. ELIMINATORIAS (KNOCKOUT)
+       ========================================= */
     function startKnockout() {
         const targetCount = parseInt(document.getElementById('knockout-size-select').value);
         let allPlayers = [];
@@ -991,20 +989,30 @@
 
     function adjustKnockoutScore(rIdx, mIdx, pNum, delta) {
         const match = state.knockoutMatches[rIdx].matches[mIdx];
-        if(match.winner) return; 
+        
+        // --- CAMBIO SOLICITADO: Permitir corregir errores ---
+        // Solo bloqueamos SUMAR puntos si el rival ya ganó.
+        // Restar puntos siempre está permitido para corregir.
+        if (delta > 0) {
+            // Si quiero sumar a P1, pero P2 ya tiene 4, no dejo.
+            if (pNum === 1 && match.s2 >= POINTS_TO_WIN) return;
+            // Si quiero sumar a P2, pero P1 ya tiene 4, no dejo.
+            if (pNum === 2 && match.s1 >= POINTS_TO_WIN) return;
+        }
 
         if(delta > 0) SoundFX.click(); else SoundFX.undo();
 
         if(pNum === 1) match.s1 = Math.max(0, Math.min(6, match.s1 + delta));
         else match.s2 = Math.max(0, Math.min(6, match.s2 + delta));
 
-        const prevWinner = match.winner;
-
+        // Recalcular estado del ganador dinámicamente
+        match.winner = null; // Reseteamos primero
+        
         if (match.s1 >= POINTS_TO_WIN && match.s1 > match.s2) match.winner = match.p1;
         else if (match.s2 >= POINTS_TO_WIN && match.s2 > match.s1) match.winner = match.p2;
-        else match.winner = null;
 
-        if(!prevWinner && match.winner) {
+        // Fanfarria solo si se acaba de ganar (y no se estaba corrigiendo hacia abajo)
+        if(match.winner && delta > 0 && (match.s1 === POINTS_TO_WIN || match.s2 === POINTS_TO_WIN)) {
             fireConfettiBurst();
             SoundFX.winMatch();
         }
@@ -1058,7 +1066,7 @@
         const curRound = state.knockoutMatches[state.knockoutMatches.length - 1];
         if(curRound.matches.some(m => !m.winner)) return alert("Faltan combates por terminar.");
         
-        SoundFX.success(); // Sound
+        SoundFX.success(); 
 
         if (curRound.matches.length === 1 && !curRound.matches[0].isThird) {
             state.phase = 'winner'; saveState(); restoreUI(); return;
@@ -1067,6 +1075,7 @@
              state.phase = 'winner'; saveState(); restoreUI(); return;
         }
         const winners = curRound.matches.map(m => m.winner);
+        
         if (curRound.matches.length === 2) { 
             const m1 = curRound.matches[0]; const m2 = curRound.matches[1];
             const w1 = m1.winner; const w2 = m2.winner;
@@ -1089,12 +1098,19 @@
 
     function renderWinnerView() {
         startContinuousConfetti();
-        SoundFX.champion(); // MUSICA FINAL
+        SoundFX.champion();
 
         const finalRound = state.knockoutMatches[state.knockoutMatches.length - 1];
         const finalMatch = finalRound.matches.find(m => m.isFinal) || finalRound.matches[0];
         const bronzeMatch = finalRound.matches.find(m => m.isThird);
-        if(finalMatch && finalMatch.winner) document.getElementById('champion-name').innerText = finalMatch.winner.name;
+        
+        if(finalMatch && finalMatch.winner) {
+            document.getElementById('champion-name').innerText = finalMatch.winner.name;
+            const runnerUp = finalMatch.winner.id === finalMatch.p1.id ? finalMatch.p2 : finalMatch.p1;
+            document.getElementById('second-place-container').classList.remove('hidden');
+            document.getElementById('second-place-name').innerText = runnerUp.name;
+        }
+
         if(bronzeMatch && bronzeMatch.winner) {
             document.getElementById('third-place-container').classList.remove('hidden');
             document.getElementById('third-place-name').innerText = bronzeMatch.winner.name;
@@ -1103,11 +1119,22 @@
         }
     }
 
-    // --- GUARDADO Y CARGA DE ARCHIVOS ---
+    /* =========================================
+       8. SISTEMA DE ARCHIVOS Y EXPORTACIÓN PERSONALIZADA
+       ========================================= */
     function downloadBackup() {
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+        const dateStr = new Date().toISOString().slice(0,10);
+        let fileName = prompt("Nombre del archivo para guardar (sin .json):", `Torneo_${dateStr}`);
+        
+        if(fileName === null) return; 
+        if(!fileName.trim()) fileName = `Torneo_${dateStr}`; 
+        
+        fileName = fileName.replace(/[^a-z0-9_\-\s]/gi, '_');
+
         const a = document.createElement('a');
-        a.href = dataStr; a.download = "torneo_bey_" + new Date().toISOString().slice(0,10) + ".json";
+        a.href = dataStr;
+        a.download = fileName + ".json";
         a.click();
         showToast("Archivo Exportado");
     }
@@ -1120,11 +1147,10 @@
         reader.onload = function(e) {
             try {
                 const data = JSON.parse(e.target.result);
-                // Validación básica de integridad
                 if (data.players && data.phase && data.groups) {
                     state = data;
-                    saveState(); // Guardar en LocalStorage
-                    restoreUI(); // Refrescar la vista
+                    saveState(); 
+                    restoreUI(); 
                     showToast("Torneo Cargado Exitosamente");
                     SoundFX.success();
                 } else {
@@ -1135,7 +1161,7 @@
             }
         };
         reader.readAsText(file);
-        input.value = ''; // Reset para poder cargar el mismo archivo si es necesario
+        input.value = ''; 
     }
     
     function showToast(msg="Guardado") {
