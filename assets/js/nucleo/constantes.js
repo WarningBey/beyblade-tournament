@@ -1,0 +1,1 @@
+export const STORAGE_KEY = "bey_manager_ult_v11_9_refined";

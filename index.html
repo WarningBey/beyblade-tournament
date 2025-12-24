@@ -3,179 +3,147 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <title>Beyblade Manager Pro</title>
+  <title>Warning BeyManager</title>
   <meta name="theme-color" content="#0f172a" />
-
-  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./assets/css/estilos.css" />
 </head>
+
 <body>
+  <canvas id="confetti-canvas"></canvas>
+
+  <input type="file" id="file-upload" accept=".json" class="hidden" onchange="loadTournamentFile(this)" />
+
+  <!-- Modal Sorteo -->
+  <div id="toss-modal" class="toss-modal" onclick="closeToss()">
+    <div class="toss-content" onclick="event.stopPropagation()">
+      <h2 class="toss-title">Sorteo</h2>
+      <div class="coin-icon" id="coin-icon">🎲</div>
+      <div class="toss-result" id="toss-result">...</div>
+      <div class="toss-buttons">
+        <button class="btn btn-primary" onclick="spinToss()">Lanzar</button>
+        <button class="btn btn-ghost" onclick="closeToss()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">Guardado</div>
+
   <div class="container">
-    <!-- === HEADER === -->
-    <header class="header">
-      <div class="header-left">
+    <!-- HEADER estilo versión buena -->
+    <header class="header flex-between">
+      <div class="header-left flex-between gap-10">
         <div class="brand">
-          <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg class="brand-icon" width="24" height="24" viewBox="0 0 24 24" fill="none"
+               stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
           </svg>
-          <h1 class="brand-title">BEY<span class="brand-accent">MANAGER</span></h1>
+          <h1 class="brand-title">
+            <span class="brand-danger">WARNING</span> BEY<span class="brand-accent">MANAGER</span>
+          </h1>
         </div>
 
-        <div class="meta-pill">
-          Meta: <strong class="meta-points">4 Pts</strong>
+        <div class="header-tools">
+          <button class="btn btn-ghost btn-icon-only" onclick="toggleMute()" title="Sonido">
+            <span id="sound-icon">🔊</span>
+          </button>
+          <button class="btn btn-ghost btn-icon-only" onclick="openToss()" title="Sorteo">🎲</button>
+          <span class="pill">Meta: <strong class="pill-strong">4</strong></span>
         </div>
       </div>
 
-      <div class="header-right controls-stack">
-        <button id="btn-backup" class="btn btn-ghost" type="button">💾 Guardar</button>
-        <button id="btn-home" class="btn btn-ghost btn-ghost-danger" type="button">🏠 Inicio</button>
+      <div class="header-right">
+        <button class="btn btn-ghost" onclick="document.getElementById('file-upload').click()">📂 Cargar</button>
+        <button class="btn btn-ghost" onclick="downloadBackup()">💾 Exportar</button>
+        <button class="btn btn-ghost btn-outline-gold" onclick="goBackStep()">⬅ Volver</button>
+        <button class="btn btn-ghost btn-outline-danger" onclick="goHome()">🏠 Inicio</button>
       </div>
     </header>
 
-    <!-- === VIEW 1: REGISTRATION === -->
-    <section id="view-registration">
+    <!-- Vista: Registro -->
+    <section id="view-registration" class="view">
       <div class="card card-narrow">
         <h2 class="card-title">Registro de Bladers</h2>
 
-        <div class="row gap-10 mb-15">
-          <input
-            type="text"
-            id="input-player"
-            class="input-dark"
-            placeholder="Nombre..."
-            autocomplete="off"
-          />
-          <button id="btn-add-player" class="btn btn-primary btn-icon" type="button">+</button>
+        <div class="row gap">
+          <input id="input-player" class="input-dark" placeholder="Nombre..." autocomplete="off" />
+          <button class="btn btn-primary btn-plus" onclick="addPlayer()">+</button>
         </div>
 
-        <div class="row-between mb-5 subheader">
+        <div class="row flex-between small muted" style="margin-top:10px;">
           <span>Lista de Inscritos</span>
-          <span class="subheader-total">Total: <span id="player-counter">0</span></span>
+          <span class="total">Total: <span id="player-counter">0</span></span>
         </div>
 
-        <div id="players-list" class="players-list">
-          <p class="placeholder text-center">Agrega jugadores para comenzar</p>
-        </div>
+        <div id="player-list"></div>
 
-        <!-- Configuración -->
         <div id="group-config" class="config-block hidden">
           <div class="config-row">
-            <label class="config-label" for="group-slider">Grupos:</label>
-            <div class="config-control">
-              <input type="range" id="group-slider" min="1" max="1" value="1" />
-              <span id="group-count-display" class="pill">1</span>
-            </div>
+            <span class="config-label">Grupos:</span>
+            <input type="range" id="group-slider" min="1" max="1" value="1" oninput="updateGroupCount(this.value)" />
+            <span id="group-count-label" class="pill">1</span>
           </div>
 
           <div class="config-row">
-            <label class="config-label" for="rounds-input">Rondas:</label>
-            <div class="config-control">
-              <input
-                type="number"
-                id="rounds-input"
-                min="1"
-                max="10"
-                value="1"
-                class="input-dark input-mini"
-              />
-              <span id="rounds-max-msg" class="help-text"></span>
-            </div>
+            <span class="config-label">Rondas:</span>
+            <input type="number" id="rounds-input" class="input-dark input-mini" min="1" max="10" value="1"
+                   onchange="setRounds(this.value)" />
+            <span id="rounds-max-msg" class="muted tiny"></span>
           </div>
-
-          <p id="group-info" class="help-text text-center mt-10"></p>
         </div>
 
-        <button id="btn-start" class="btn btn-success btn-full mt-15" type="button" disabled>
+        <button id="btn-start" class="btn btn-success w-100" onclick="generateGroups()" disabled>
           INICIAR TORNEO
         </button>
       </div>
     </section>
 
-    <!-- === VIEW 2: GROUPS === -->
-    <section id="view-groups" class="hidden">
-      <div class="groups-header">
-        <h2 class="m-0">Fase de Grupos</h2>
+    <!-- Vista: Grupos -->
+    <section id="view-groups" class="view hidden">
+      <h2 class="title">Fase de Grupos</h2>
 
-        <div class="row gap-10">
-          <div class="cutoff-control">
-            <label class="cutoff-label" for="knockout-size-select">Corte Eliminatorio:</label>
-            <select id="knockout-size-select" class="input-dark input-select input-cutoff">
-              <!-- JS populated -->
-            </select>
-          </div>
-
-          <button id="btn-to-knockout" class="btn btn-warning" type="button">
-            Ir a Llaves »
-          </button>
-        </div>
+      <div class="row gap wrap">
+        <button class="btn btn-whatsapp" onclick="copyStandingsToClipboard()">📱 Copiar Tabla</button>
+        <button class="btn btn-warning" onclick="startKnockout()">Ir a Llaves »</button>
+        <button class="btn btn-ghost" onclick="redistributeGroups()">Rebalancear grupos</button>
       </div>
 
-      <!-- Tabla general -->
-      <div class="card card-compact">
-        <h3 class="section-title">Tabla General de Clasificación</h3>
+      <div id="groups-container" class="groups-container"></div>
 
-        <div class="standings-container">
-          <table class="global-table">
-            <thead>
-              <tr>
-                <th style="width: 40px;">#</th>
-                <th>Blader</th>
-                <th>Grupo</th>
-                <th class="text-center">W</th>
-                <th class="text-center">Pts</th>
-              </tr>
-            </thead>
-            <tbody id="global-standings-body"></tbody>
-          </table>
-        </div>
-
-        <div class="legend text-center">
-          <span class="legend-box legend-ok"></span> Clasifican a Eliminatorias
-          <span class="legend-sep">|</span>
-          <span class="legend-cut">---</span> Línea de Corte
-        </div>
-      </div>
-
-      <div id="groups-container" class="groups-grid"></div>
+      <h3 class="subtitle">Tabla Global</h3>
+      <div id="global-standings" class="card"></div>
     </section>
 
-    <!-- === VIEW 3: KNOCKOUT === -->
-    <section id="view-knockout" class="hidden knockout">
-      <h2 class="text-center knockout-title">Fase Eliminatoria</h2>
+    <!-- Vista: Eliminatorias -->
+    <section id="view-knockout" class="view hidden">
+      <h2 class="title">Eliminatorias</h2>
 
-      <div class="text-center mb-15">
-        <span id="round-badge" class="badge">Ronda 1</span>
+      <div class="card">
+        <div class="row gap wrap">
+          <label class="label">Ronda</label>
+          <select id="knockout-round-select" class="input-dark" onchange="selectKnockoutRound(this.value)"></select>
+        </div>
+
+        <div id="knockout-container" class="knockout-container"></div>
+
+        <div class="row gap">
+          <button class="btn btn-primary w-100" onclick="advanceRound()">Confirmar Resultados y Avanzar</button>
+        </div>
+
+        <div class="row gap">
+          <button class="btn btn-danger w-100" onclick="hardReset(true)">Reiniciar Torneo</button>
+        </div>
       </div>
-
-      <div id="bracket-container"></div>
-
-      <button id="btn-advance" class="btn btn-primary btn-full btn-xl mt-20" type="button">
-        Confirmar Resultados y Avanzar
-      </button>
     </section>
 
-    <!-- === VIEW 4: WINNER === -->
-    <section id="view-winner" class="hidden winner text-center">
-      <div class="winner-icon">🏆</div>
-      <h2 class="winner-subtitle">Gran Campeón</h2>
-
-      <div id="champion-name" class="winner-name">NOMBRE</div>
-
-      <div id="third-place-container" class="hidden third-place">
-        <div class="third-icon">🥉</div>
-        <h3 class="third-title">3er Lugar</h3>
-        <div id="third-place-name" class="third-name"></div>
-      </div>
-
-      <button id="btn-new-tournament" class="btn btn-ghost mt-40" type="button">
-        Iniciar Nuevo Torneo
-      </button>
+    <!-- Vista: Ganador -->
+    <section id="view-winner" class="view hidden">
+      <h2 class="title">🏆 Ganador</h2>
+      <div id="winner-card" class="card winner-card"></div>
+      <button class="btn btn-ghost w-100" onclick="hardReset(true)">Iniciar Nuevo Torneo</button>
     </section>
   </div>
 
-  <div id="toast" class="toast" role="status" aria-live="polite">Guardado</div>
-
-  <!-- Controller (MVC) -->
-  <script type="module" src="./src/controller.js"></script>
+  <!-- Importante: módulos requieren SERVIDOR (http://) -->
+  <script type="module" src="./assets/js/app.js"></script>
 </body>
 </html>
