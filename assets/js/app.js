@@ -25,6 +25,7 @@ import {
   showToast,
   renderPlayerList,
   renderGroups,
+  renderGeneralTable, 
   renderGlobalStandings,
   renderBracket,
   renderWinnerView,
@@ -38,7 +39,7 @@ import { registrarEventosUI } from "./ui/eventos.js";
 // =========================
 import { addPlayer, removePlayer, editPlayerName, setRounds, updateGroupCount } from "./dominio/torneo.js";
 import { generateGroups, redistributeGroups, adjustScore, copyStandingsToClipboard } from "./dominio/grupos.js";
-import { startKnockout, selectKnockoutRound, advanceRound } from "./dominio/eliminatorias.js";
+import { startKnockout, advanceRound, selectKnockoutRound, setKnockoutSize, adjustKnockoutScore } from "./dominio/eliminatorias.js";
 import { recalcularRankingDesdeGrupos, obtenerRankingGlobal, obtenerTopN } from "./dominio/ranking.js";
 
 // =========================
@@ -52,7 +53,7 @@ function exponerAPI() {
     loadState,
     saveState,
     hardReset,
-
+    renderGeneralTable,
     showToast,
     hideAllViews,
     restoreUI,
@@ -81,7 +82,8 @@ function exponerAPI() {
     startKnockout,
     selectKnockoutRound,
     advanceRound,
-
+    setKnockoutSize,
+    adjustKnockoutScore,
     downloadBackup,
     loadTournamentFile,
 
@@ -116,3 +118,4 @@ function inicializarApp() {
 // =========================
 exponerAPI();
 window.addEventListener("DOMContentLoaded", inicializarApp);
+

@@ -29,7 +29,7 @@
   <div id="toast" class="toast">Guardado</div>
 
   <div class="container">
-    <!-- HEADER estilo versión buena -->
+    <!-- HEADER -->
     <header class="header flex-between">
       <div class="header-left flex-between gap-10">
         <div class="brand">
@@ -83,10 +83,10 @@
             <span id="group-count-label" class="pill">1</span>
           </div>
 
-          <div class="config-row">
+          <div class="config-row" id="rounds-config-row">
             <span class="config-label">Rondas:</span>
             <input type="number" id="rounds-input" class="input-dark input-mini" min="1" max="10" value="1"
-                   onchange="setRounds(this.value)" />
+                  onchange="setRounds(this.value)" />
             <span id="rounds-max-msg" class="muted tiny"></span>
           </div>
         </div>
@@ -99,38 +99,91 @@
 
     <!-- Vista: Grupos -->
     <section id="view-groups" class="view hidden">
+
       <h2 class="title">Fase de Grupos</h2>
 
-      <div class="row gap wrap">
-        <button class="btn btn-whatsapp" onclick="copyStandingsToClipboard()">📱 Copiar Tabla</button>
-        <button class="btn btn-warning" onclick="startKnockout()">Ir a Llaves »</button>
-        <button class="btn btn-ghost" onclick="redistributeGroups()">Rebalancear grupos</button>
+      <!-- ✅ Caja de Tabla General + toolbar dentro del contorno -->
+      <div class="general-panel card">
+
+        <!-- Toolbar (todo dentro del contorno) -->
+        <div class="general-toolbar">
+          <div class="general-left">
+            <h3 class="subtitle table-help-title">
+              Tabla General
+              <span class="table-help-icon" tabindex="0">ℹ️</span>
+
+              <div class="table-help-tooltip">
+                <strong>📊 Métricas</strong>
+                <ul>
+                  <li><b>PT</b> — Puntos Totales (puntos hechos en rondas)</li>
+                  <li><b>PL</b> — Puntos de Liga (Victoria +3 / Derrota +1)</li>
+                  <li><b>PC</b> — Puntos en Contra (menor es mejor)</li>
+                  <li><b>WIN</b> — Victorias obtenidas</li>
+                </ul>
+
+                <hr />
+
+                <strong>🔢 Orden de Prioridad</strong>
+                <ol>
+                  <li><b>PT</b> (más puntos hechos)</li>
+                  <li><b>PL</b> (mejor rendimiento en liga)</li>
+                  <li><b>PC</b> (menos puntos recibidos)</li>
+                </ol>
+              </div>
+            </h3>
+          </div>
+
+          <div class="general-right">
+            <button class="btn btn-blue-ghost btn-small" onclick="redistributeGroups()">↻ Redistribuir</button>
+
+            <button class="btn btn-whatsapp btn-small" onclick="copyStandingsToClipboard()">📱 Copiar</button>
+
+            <select
+              id="knockout-size-select"
+              class="select-top select-top--small"
+              onchange="setKnockoutSize(this.value); renderGeneralTable(); renderGlobalStandings();"
+            >
+              <option value="2">Top 2</option>
+              <option value="4">Top 4</option>
+              <option value="8" selected>Top 8</option>
+            </select>
+
+            <button class="btn btn-warning btn-small" onclick="startKnockout()">Ir Eliminatoria »</button>
+          </div>
+        </div>
+
+        <!-- Tabla General renderizada por JS -->
+        <div id="general-table"></div>
       </div>
 
+      <!-- Cards de grupos -->
       <div id="groups-container" class="groups-container"></div>
-
-      <h3 class="subtitle">Tabla Global</h3>
-      <div id="global-standings" class="card"></div>
     </section>
+
 
     <!-- Vista: Eliminatorias -->
     <section id="view-knockout" class="view hidden">
-      <h2 class="title">Eliminatorias</h2>
+      <h2 class="title title-center title-gold">Fase Eliminatoria</h2>
 
-      <div class="card">
-        <div class="row gap wrap">
-          <label class="label">Ronda</label>
-          <select id="knockout-round-select" class="input-dark" onchange="selectKnockoutRound(this.value)"></select>
-        </div>
+      <!-- ✅ Badge centrado y protagónico -->
+      <div class="knockout-head">
+        <span id="round-badge" class="round-badge">Ronda 1</span>
+      </div>
+
+      <div class="knockout-stage">
+        <!-- ✅ Select existe pero NO se ve (lo usa la lógica JS) -->
+        <select
+          id="knockout-round-select"
+          class="input-dark input-round hidden"
+          onchange="selectKnockoutRound(this.value)">
+        </select>
 
         <div id="knockout-container" class="knockout-container"></div>
 
-        <div class="row gap">
-          <button class="btn btn-primary w-100" onclick="advanceRound()">Confirmar Resultados y Avanzar</button>
-        </div>
-
-        <div class="row gap">
-          <button class="btn btn-danger w-100" onclick="hardReset(true)">Reiniciar Torneo</button>
+        <div class="knockout-actions">
+          <button class="btn btn-primary btn-advance" onclick="advanceRound()">
+            Confirmar Resultados y Avanzar
+          </button>
         </div>
       </div>
     </section>
@@ -139,7 +192,6 @@
     <section id="view-winner" class="view hidden">
       <h2 class="title">🏆 Ganador</h2>
       <div id="winner-card" class="card winner-card"></div>
-      <button class="btn btn-ghost w-100" onclick="hardReset(true)">Iniciar Nuevo Torneo</button>
     </section>
   </div>
 
