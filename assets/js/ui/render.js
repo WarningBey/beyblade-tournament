@@ -77,7 +77,7 @@ function applyRoundsModeUI() {
     roundsInput.title = "En fase de grupos el calendario es automático (todos contra todos).";
 
     if (roundsMsg) {
-      roundsMsg.textContent = `(Calendario: ${scheduleRounds} | Cada jugador: ${perPlayer} partidas)`;
+      roundsMsg.textContent = `(Cada Participante jugara: ${perPlayer} partidas)`;
     }
 
     roundsRow?.classList.remove("hidden");

@@ -7,8 +7,24 @@
   <meta name="theme-color" content="#0f172a" />
   <link rel="stylesheet" href="./assets/css/estilos.css" />
 </head>
+<!-- Créditos (fijo abajo izquierda) -->
+<a
+  class="credit-badge"
+  href="https://instagram.com/trujillo_diego_g"
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="Créditos de diseño: Diego Alejandro Guevara Trujillo (Instagram)"
+>
+  <span class="credit-title">Diseño:</span>
+  <span class="credit-name">Diego Alejandro Guevara Trujillo</span>
+  <span class="credit-sep">•</span>
+  <span class="credit-ig">@trujillo_diego_g</span>
+</a>
 
-<body>
+<body class="app-body">
+  <!-- Fondo visual -->
+  <div class="app-bg" aria-hidden="true"></div>
+
   <canvas id="confetti-canvas"></canvas>
 
   <input type="file" id="file-upload" accept=".json" class="hidden" onchange="loadTournamentFile(this)" />
@@ -30,82 +46,92 @@
 
   <div class="container">
     <!-- HEADER -->
-    <header class="header flex-between">
-      <div class="header-left flex-between gap-10">
-        <div class="brand">
-          <svg class="brand-icon" width="24" height="24" viewBox="0 0 24 24" fill="none"
-               stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-          </svg>
-          <h1 class="brand-title">
-            <span class="brand-danger">WARNING</span> BEY<span class="brand-accent">MANAGER</span>
-          </h1>
-        </div>
-
-        <div class="header-tools">
-          <button class="btn btn-ghost btn-icon-only" onclick="toggleMute()" title="Sonido">
-            <span id="sound-icon">🔊</span>
-          </button>
-          <button class="btn btn-ghost btn-icon-only" onclick="openToss()" title="Sorteo">🎲</button>
-          <span class="pill">Meta: <strong class="pill-strong">4</strong></span>
+    <header class="header header-min">
+      <div class="header-min-left">
+        <img class="header-min-logo" src="./assets/img/warning-logo.png" alt="Warning" />
+        <div class="header-min-titles">
+          <div class="header-min-title">Warning</div>
+          <div class="header-min-subtitle">BeyManager</div>
         </div>
       </div>
 
-      <div class="header-right">
-        <button class="btn btn-ghost" onclick="document.getElementById('file-upload').click()">📂 Cargar</button>
-        <button class="btn btn-ghost" onclick="downloadBackup()">💾 Exportar</button>
-        <button class="btn btn-ghost btn-outline-gold" onclick="goBackStep()">⬅ Volver</button>
-        <button class="btn btn-ghost btn-outline-danger" onclick="goHome()">🏠 Inicio</button>
-      </div>
+      <nav class="header-min-right" aria-label="Navegación principal">
+        <button class="nav-link" onclick="document.getElementById('file-upload').click()">Carga</button>
+        <button class="nav-link" onclick="downloadBackup()">Exportar</button>
+        <button class="nav-link" onclick="goBackStep()">Volver</button>
+        <button class="nav-link nav-link--active" onclick="goHome()">Inicio</button>
+      </nav>
     </header>
 
     <!-- Vista: Registro -->
-    <section id="view-registration" class="view">
-      <div class="card card-narrow">
-        <h2 class="card-title">Registro de Bladers</h2>
+    <section id="view-registration" class="view view-center">
+      <div class="card card-narrow card-glass registration-card">
 
-        <div class="row gap">
-          <input id="input-player" class="input-dark" placeholder="Nombre..." autocomplete="off" />
-          <button class="btn btn-primary btn-plus" onclick="addPlayer()">+</button>
+        <div class="card-head">
+          <h2 class="card-title card-title-clean">Registro de Bladers</h2>
+          <span class="chip chip-soft">LIVE</span>
         </div>
 
-        <div class="row flex-between small muted" style="margin-top:10px;">
-          <span>Lista de Inscritos</span>
-          <span class="total">Total: <span id="player-counter">0</span></span>
-        </div>
+        <!-- ✅ Layout estable tipo “panel” (como referencia) -->
+        <div class="reg-layout">
+          <!-- Input + -->
+          <div class="reg-add">
+            <input id="input-player" class="input-dark input-glass" placeholder="Nombre..." autocomplete="off" />
+            <button class="btn btn-primary btn-plus btn-plus-glow" onclick="addPlayer()">+</button>
 
-        <div id="player-list"></div>
-
-        <div id="group-config" class="config-block hidden">
-          <div class="config-row">
-            <span class="config-label">Grupos:</span>
-            <input type="range" id="group-slider" min="1" max="1" value="1" oninput="updateGroupCount(this.value)" />
-            <span id="group-count-label" class="pill">1</span>
+            <div class="reg-total">
+              Total: <span id="player-counter">0</span>
+            </div>
           </div>
 
-          <div class="config-row" id="rounds-config-row">
-            <span class="config-label">Rondas:</span>
-            <input type="number" id="rounds-input" class="input-dark input-mini" min="1" max="10" value="1"
-                  onchange="setRounds(this.value)" />
-            <span id="rounds-max-msg" class="muted tiny"></span>
+          <!-- Lista -->
+          <div class="reg-list-head">
+            <span class="reg-list-title">Lista de Inscritos</span>
+          </div>
+
+          <div id="player-list" class="lista-inscritos"></div>
+
+          <!-- Config abajo de la lista -->
+          <div id="group-config" class="config-block config-glass hidden">
+            <div class="config-row">
+              <span class="config-label">Grupos:</span>
+              <input type="range" id="group-slider" min="1" max="1" value="1" oninput="updateGroupCount(this.value)" />
+              <span id="group-count-label" class="pill pill-glass">1</span>
+            </div>
+
+            <div class="config-row" id="rounds-config-row">
+              <span class="config-label">Rondas:</span>
+              <input
+                type="number"
+                id="rounds-input"
+                class="input-dark input-mini input-glass"
+                min="1"
+                max="10"
+                value="1"
+                onchange="setRounds(this.value)"
+              />
+              <span id="rounds-max-msg" class="muted tiny"></span>
+            </div>
+          </div>
+
+          <!-- ✅ Botón al final (como ejemplo) -->
+          <button id="btn-start" class="btn btn-success w-100 btn-start-hero" onclick="generateGroups()" disabled>
+            INICIAR TORNEO
+          </button>
+
+          <div class="reg-footnote muted tiny">
+            Tip: con 10+ bladers queda más parejo 💪
           </div>
         </div>
 
-        <button id="btn-start" class="btn btn-success w-100" onclick="generateGroups()" disabled>
-          INICIAR TORNEO
-        </button>
       </div>
     </section>
 
     <!-- Vista: Grupos -->
     <section id="view-groups" class="view hidden">
-
       <h2 class="title">Fase de Grupos</h2>
 
-      <!-- ✅ Caja de Tabla General + toolbar dentro del contorno -->
-      <div class="general-panel card">
-
-        <!-- Toolbar (todo dentro del contorno) -->
+      <div class="general-panel card card-glass">
         <div class="general-toolbar">
           <div class="general-left">
             <h3 class="subtitle table-help-title">
@@ -115,19 +141,19 @@
               <div class="table-help-tooltip">
                 <strong>📊 Métricas</strong>
                 <ul>
-                  <li><b>PT</b> — Puntos Totales (puntos hechos en rondas)</li>
-                  <li><b>PL</b> — Puntos de Liga (Victoria +3 / Derrota +1)</li>
-                  <li><b>PC</b> — Puntos en Contra (menor es mejor)</li>
-                  <li><b>WIN</b> — Victorias obtenidas</li>
+                  <li><b>PT</b> — Puntos Totales</li>
+                  <li><b>PL</b> — Puntos de Liga</li>
+                  <li><b>PC</b> — Puntos en Contra</li>
+                  <li><b>WIN</b> — Victorias</li>
                 </ul>
 
                 <hr />
 
                 <strong>🔢 Orden de Prioridad</strong>
                 <ol>
-                  <li><b>PT</b> (más puntos hechos)</li>
-                  <li><b>PL</b> (mejor rendimiento en liga)</li>
-                  <li><b>PC</b> (menos puntos recibidos)</li>
+                  <li><b>PT</b></li>
+                  <li><b>PL</b></li>
+                  <li><b>PC</b></li>
                 </ol>
               </div>
             </h3>
@@ -135,7 +161,6 @@
 
           <div class="general-right">
             <button class="btn btn-blue-ghost btn-small" onclick="redistributeGroups()">↻ Redistribuir</button>
-
             <button class="btn btn-whatsapp btn-small" onclick="copyStandingsToClipboard()">📱 Copiar</button>
 
             <select
@@ -152,26 +177,21 @@
           </div>
         </div>
 
-        <!-- Tabla General renderizada por JS -->
         <div id="general-table"></div>
       </div>
 
-      <!-- Cards de grupos -->
       <div id="groups-container" class="groups-container"></div>
     </section>
-
 
     <!-- Vista: Eliminatorias -->
     <section id="view-knockout" class="view hidden">
       <h2 class="title title-center title-gold">Fase Eliminatoria</h2>
 
-      <!-- ✅ Badge centrado y protagónico -->
       <div class="knockout-head">
         <span id="round-badge" class="round-badge">Ronda 1</span>
       </div>
 
       <div class="knockout-stage">
-        <!-- ✅ Select existe pero NO se ve (lo usa la lógica JS) -->
         <select
           id="knockout-round-select"
           class="input-dark input-round hidden"
@@ -195,7 +215,6 @@
     </section>
   </div>
 
-  <!-- Importante: módulos requieren SERVIDOR (http://) -->
   <script type="module" src="./assets/js/app.js"></script>
 </body>
 </html>
