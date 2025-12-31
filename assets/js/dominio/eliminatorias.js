@@ -177,15 +177,24 @@ export function adjustKnockoutScore(matchId, side, delta) {
   const A = match.a;
   const B = match.b;
 
-  if (delta > 0) {
-    if (side === 0 && (B.score ?? 0) >= TARGET) return;
-    if (side === 1 && (A.score ?? 0) >= TARGET) return;
+  const aNow = Number(A.score ?? 0);
+  const bNow = Number(B.score ?? 0);
+
+  // ✅ Si el rival ya ganó (>=TARGET), tú solo puedes subir hasta TARGET-1 (3)
+  const maxA = (bNow >= TARGET) ? (TARGET - 1) : 6;
+  const maxB = (aNow >= TARGET) ? (TARGET - 1) : 6;
+
+  if (side === 0) {
+    const next = Number(A.score ?? 0) + delta;
+    A.score = Math.max(0, Math.min(maxA, next));
+  } else {
+    const next = Number(B.score ?? 0) + delta;
+    B.score = Math.max(0, Math.min(maxB, next));
   }
 
-  if (side === 0) A.score = Math.max(0, Math.min(6, Number(A.score ?? 0) + delta));
-  else B.score = Math.max(0, Math.min(6, Number(B.score ?? 0) + delta));
-
+  // Recalcular ganador
   match.winner = null;
+
   const aS = Number(A.score ?? 0);
   const bS = Number(B.score ?? 0);
 
@@ -195,6 +204,7 @@ export function adjustKnockoutScore(matchId, side, delta) {
   saveState();
   window.renderBracket?.();
 }
+
 
 export function advanceRound() {
   const roundSel = document.getElementById("knockout-round-select");

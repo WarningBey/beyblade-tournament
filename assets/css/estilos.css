@@ -94,13 +94,9 @@ body{
   position:absolute;
   inset:0;
   background: url("../img/bg-bey.jpg") var(--bg-pos-x) var(--bg-pos-y) / cover no-repeat;
-  opacity: var(--bg-opacity);
-  transform: scale(1.01);
-  filter:
-    blur(3px)
-    saturate(var(--bg-sat))
-    contrast(var(--bg-contrast))
-    brightness(var(--bg-brightness));
+  opacity: 1;
+  transform: none;
+  filter: none; /* ✅ sin blur, sin filtros */
 }
 
 /* ✅ overlay suave (no mata el fondo) */
@@ -116,16 +112,10 @@ body{
 
 /* ✅ Ajustes responsivos */
 @media (max-width: 900px){
-  :root{
-    --bg-pos-x: 55%;
-    --bg-pos-y: 48%;
-  }
+  :root{ --bg-pos-x: 55%; --bg-pos-y: 48%; }
 }
 @media (max-width: 620px){
-  :root{
-    --bg-pos-x: 50%;
-    --bg-pos-y: 52%;
-  }
+  :root{ --bg-pos-x: 50%; --bg-pos-y: 52%; }
 }
 
 #confetti-canvas{
@@ -149,11 +139,7 @@ body{
   padding: 0;
 }
 
-.header-min-left{
-  display:flex;
-  align-items:center;
-  gap: 12px;
-}
+.header-min-left{ display:flex; align-items:center; gap: 12px; }
 
 .header-min-logo{
   width: 100px;
@@ -181,11 +167,7 @@ body{
   text-shadow: 0 2px 12px rgba(0,0,0,.30);
 }
 
-.header-min-right{
-  display:flex;
-  align-items:center;
-  gap: 34px;
-}
+.header-min-right{ display:flex; align-items:center; gap: 34px; }
 
 .nav-link{
   background: transparent;
@@ -283,11 +265,13 @@ body{
 .card-glass{
   background: rgba(230,236,235,.82);
   border: var(--panel-border-w) solid var(--panel-border);
+  border-radius: var(--panel-radius);
   box-shadow: 0 18px 40px rgba(0,0,0,.25);
   backdrop-filter: blur(2px);
+  color: #0b1220;
 }
+.card-glass .muted{ color: rgba(15,23,42,.65); }
 
-/* ✅ registro ancho sin tocar HTML */
 #view-registration .card-narrow{
   max-width: none;
   width: min(1050px, 94vw);
@@ -298,17 +282,9 @@ body{
   padding: var(--panel-pad);
   position: relative;
   overflow: hidden;
+  color:#0b1220;
 }
-
-/* ✅ Textos oscuros SOLO dentro del panel claro */
-.card-glass,
-.registration-card{
-  color: #0b1220;
-}
-.card-glass .muted,
-.registration-card .muted{
-  color: rgba(15,23,42,.65);
-}
+.registration-card .muted{ color: rgba(15,23,42,.65); }
 
 .registration-card:before{
   content:"";
@@ -321,7 +297,6 @@ body{
   opacity:.75;
 }
 
-/* ✅ watermark */
 .registration-card:after{
   content:"";
   position:absolute;
@@ -332,7 +307,6 @@ body{
   mix-blend-mode: screen;
   pointer-events:none;
 }
-
 .registration-card > *{ position: relative; z-index: 1; }
 
 .card-head{
@@ -404,10 +378,7 @@ body{
 }
 
 .reg-list-head{ margin-top: 2px; }
-.reg-list-title{
-  font-weight: 900;
-  color:#0b1220;
-}
+.reg-list-title{ font-weight: 900; color:#0b1220; }
 
 .lista-inscritos{
   display:grid;
@@ -435,7 +406,6 @@ body{
   gap:12px;
   min-height: 46px;
 }
-
 .inscrito-nombre{
   font-size: 1rem;
   font-weight: 900;
@@ -622,8 +592,6 @@ body{
 /* ==========================
    ✅ GRUPOS + VS (MATCH ROWS)
    ========================== */
-
-/* Grid principal de grupos */
 .groups-container{
   display:grid;
   grid-template-columns: 1fr 1fr;
@@ -634,16 +602,52 @@ body{
   .groups-container{ grid-template-columns: 1fr; }
 }
 
-/* Cards de grupo (aplica aunque el JS no ponga class exacta) */
+/* ✅ Cards de grupo (estilo registro) */
 #groups-container > div,
 #groups-container .group-card,
 #groups-container .group{
-  background: linear-gradient(180deg, rgba(30,41,59,.88), rgba(15,23,42,.90));
-  border: 1px solid rgba(148,163,184,.22);
-  border-radius: 18px;
+  background: rgba(230,236,235,.82);
+  border: var(--panel-border-w) solid var(--panel-border);
+  border-radius: var(--panel-radius);
   padding: 16px 16px 12px 16px;
-  box-shadow: 0 18px 40px rgba(0,0,0,.40);
-  backdrop-filter: blur(4px);
+  box-shadow: 0 18px 40px rgba(0,0,0,.25);
+  backdrop-filter: blur(2px);
+  color:#0b1220;
+  position:relative;
+  overflow:hidden;
+}
+
+#groups-container > div:before,
+#groups-container .group-card:before,
+#groups-container .group:before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  pointer-events:none;
+  background:
+    radial-gradient(650px 260px at 20% 0%, rgba(59,130,246,.18), transparent 55%),
+    radial-gradient(650px 260px at 80% 0%, rgba(234,179,8,.14), transparent 55%);
+  opacity:.75;
+}
+
+#groups-container > div:after,
+#groups-container .group-card:after,
+#groups-container .group:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background: url("../img/warning-logo.png") center / var(--wm-size) no-repeat;
+  opacity: .08;
+  filter: grayscale(1) brightness(2.4) contrast(1.05);
+  mix-blend-mode: screen;
+  pointer-events:none;
+}
+
+#groups-container > div > *,
+#groups-container .group-card > *,
+#groups-container .group > *{
+  position:relative;
+  z-index:1;
 }
 
 /* Título */
@@ -652,30 +656,25 @@ body{
   margin: 0 0 12px 0;
   font-size: 1.15rem;
   font-weight: 950;
-  color: rgba(226,232,240,.96);
+  color: #0b1220;
   padding-bottom: 10px;
-  border-bottom: 1px solid rgba(148,163,184,.18);
+  border-bottom: 1px solid rgba(15,23,42,.12);
 }
 
 /* Mini tabla por grupo */
-#groups-container table{
-  width:100%;
-  border-collapse: collapse;
-  font-size: .92rem;
-  margin-bottom: 10px;
-}
+#groups-container table{ width:100%; border-collapse: collapse; font-size: .92rem; margin-bottom: 10px; }
 #groups-container th{
   text-align:left;
   padding: 10px 8px;
-  color: rgba(148,163,184,.92);
+  color: rgba(15,23,42,.65);
   font-weight: 900;
-  border-bottom: 1px solid rgba(148,163,184,.18);
+  border-bottom: 1px solid rgba(15,23,42,.12);
 }
 #groups-container td{
   padding: 10px 8px;
-  color: rgba(226,232,240,.92);
-  font-weight: 700;
-  border-bottom: 1px solid rgba(148,163,184,.10);
+  color: rgba(15,23,42,.92);
+  font-weight: 800;
+  border-bottom: 1px solid rgba(15,23,42,.08);
 }
 #groups-container tr:last-child td{ border-bottom:none; }
 
@@ -692,18 +691,18 @@ body{
   border-radius: 10px;
   font-weight: 950;
   letter-spacing: .12em;
-  color:#93c5fd;
+  color:#1d4ed8;
   font-size: .85rem;
 }
 
-/* Match rows (si tu HTML usa estas clases) */
+/* Match rows */
 .match-row{
   display:grid;
   grid-template-columns: 1.2fr auto 18px auto 1.2fr;
   align-items:center;
   gap:10px;
   padding: 10px 0;
-  border-bottom: 1px solid rgba(148,163,184,.10);
+  border-bottom: 1px solid rgba(15,23,42,.10);
 }
 .match-row:last-child{border-bottom:none;}
 
@@ -712,7 +711,7 @@ body{
   text-overflow:ellipsis;
   white-space:nowrap;
   font-weight: 900;
-  color: rgba(226,232,240,.95);
+  color: rgba(15,23,42,.95);
 }
 .match-row__name--right{ text-align:right; }
 
@@ -721,7 +720,7 @@ body{
   opacity:.75;
   font-weight: 950;
   letter-spacing: .12em;
-  color: rgba(148,163,184,.95);
+  color: rgba(15,23,42,.65);
 }
 
 /* Score box */
@@ -729,8 +728,8 @@ body{
   display:flex;
   align-items:center;
   gap:8px;
-  background: rgba(2,6,23,.35);
-  border: 1px solid rgba(148,163,184,.18);
+  background: rgba(255,255,255,.45);
+  border: 1px solid rgba(15,23,42,.12);
   border-radius: 12px;
   padding: 6px 8px;
 }
@@ -738,18 +737,18 @@ body{
   width:32px;
   height:32px;
   border-radius: 10px;
-  border: 1px solid rgba(148,163,184,.22);
-  background: rgba(2,6,23,.50);
-  color: rgba(226,232,240,.95);
+  border: 1px solid rgba(15,23,42,.18);
+  background: rgba(255,255,255,.55);
+  color: rgba(15,23,42,.95);
   font-weight: 950;
   cursor:pointer;
 }
-.score-btn:hover{ background: rgba(51,65,85,.70); }
+.score-btn:hover{ background: rgba(59,130,246,.14); }
 .score-num{
   width: 22px;
   text-align:center;
   font-weight: 950;
-  color: rgba(226,232,240,.95);
+  color: rgba(15,23,42,.95);
 }
 
 /* Fantasma */
@@ -764,10 +763,10 @@ body{
 .btn-blue-ghost{
   background: rgba(59,130,246,.18);
   border: 1px solid rgba(59,130,246,.55);
-  color: #93c5fd;
+  color: #1d4ed8;
   font-weight: 900;
 }
-.btn-blue-ghost:hover{ background: rgba(59,130,246,.28); color:#fff; }
+.btn-blue-ghost:hover{ background: rgba(59,130,246,.28); color:#0b1220; }
 
 .btn-whatsapp{
   background: var(--whatsapp);
@@ -794,8 +793,8 @@ body{
 
 /* ==========================
    ✅ KO (SCOPED) - Eliminatorias
+   ✅ AHORA MISMO FORMATO "PANEL CLARO" (como Registro/Grupos)
    ========================== */
-
 #view-knockout .title-center{ text-align:center; }
 #view-knockout .title-gold{ color: var(--gold); font-weight: 900; }
 
@@ -811,17 +810,18 @@ body{
   justify-content:center;
   padding: 12px 28px;
   border-radius: 999px;
-  background: linear-gradient(135deg, rgba(59,130,246,.35), rgba(59,130,246,.15));
-  border: 1px solid rgba(59,130,246,.65);
-  color: #93c5fd;
-  font-weight: 900;
+  background: rgba(230,236,235,.65);
+  border: 2px solid rgba(127,209,178,.85);
+  color: rgba(15,23,42,.82);
+  font-weight: 950;
   font-size: 1.05rem;
   letter-spacing: .08em;
-  box-shadow: 0 8px 25px rgba(0,0,0,.35);
+  box-shadow: 0 10px 28px rgba(0,0,0,.25);
+  backdrop-filter: blur(2px);
 }
 
 #view-knockout .knockout-stage{
-  max-width: 860px;
+  max-width: 980px;
   margin: 0 auto;
   padding: 0;
 }
@@ -833,33 +833,63 @@ body{
   margin-top: 18px;
 }
 
+/* ✅ match-card con mismo panel claro */
 #view-knockout .match-card{
-  background: linear-gradient(180deg, rgba(30,41,59,.88), rgba(15,23,42,.88));
-  border: 1px solid rgba(148,163,184,.22);
-  border-radius: 16px;
+  background: rgba(230,236,235,.82);
+  border: var(--panel-border-w) solid var(--panel-border);
+  border-radius: var(--panel-radius);
   padding: 18px 22px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04);
+  box-shadow: 0 18px 40px rgba(0,0,0,.25);
+  backdrop-filter: blur(2px);
+  color:#0b1220;
+  position:relative;
+  overflow:hidden;
 }
 
+/* glow tipo registro */
+#view-knockout .match-card:before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  pointer-events:none;
+  background:
+    radial-gradient(650px 260px at 20% 0%, rgba(59,130,246,.18), transparent 55%),
+    radial-gradient(650px 260px at 80% 0%, rgba(234,179,8,.14), transparent 55%);
+  opacity:.75;
+}
+
+/* watermark suave */
+#view-knockout .match-card:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background: url("../img/warning-logo.png") center / var(--wm-size) no-repeat;
+  opacity: .08;
+  filter: grayscale(1) brightness(2.4) contrast(1.05);
+  mix-blend-mode: screen;
+  pointer-events:none;
+}
+
+#view-knockout .match-card > *{ position:relative; z-index:1; }
+
+/* Final y 3er lugar: solo cambia borde externo */
 #view-knockout .match-card--final{
-  border: 2px solid var(--gold);
-  box-shadow: 0 14px 38px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);
+  border-color: var(--gold);
 }
-
 #view-knockout .match-card--third{
-  border: 2px solid rgba(245,158,11,.95);
-  box-shadow: 0 14px 38px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);
+  border-color: rgba(245,158,11,.95);
 }
 
+/* Titulito final/3ro */
 #view-knockout .match-headline{
   text-align:center;
-  font-weight: 900;
+  font-weight: 950;
   letter-spacing: .16em;
   font-size: .85rem;
   margin-bottom: 14px;
-  color: var(--gold);
+  color: rgba(15,23,42,.75);
 }
-
+#view-knockout .match-card--final .match-headline{ color: rgba(161,98,7,.95); }
 #view-knockout .match-card--third .match-headline{ color: rgba(245,158,11,.95); }
 
 #view-knockout .match-body{
@@ -870,11 +900,12 @@ body{
 }
 
 #view-knockout .match-player{
-  font-weight: 900;
-  font-size: 1.15rem;
+  font-weight: 950;
+  font-size: 1.20rem;
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
+  color: rgba(15,23,42,.95);
 }
 
 #view-knockout .match-center{
@@ -885,41 +916,45 @@ body{
 }
 
 #view-knockout .match-vs{
-  font-weight: 900;
-  opacity: .85;
+  font-weight: 950;
+  opacity: .70;
   font-size: .95rem;
   letter-spacing: .1em;
+  color: rgba(15,23,42,.75);
 }
 
 #view-knockout .score-wrapper{
   display:flex;
   align-items:center;
   gap:12px;
+  background: rgba(255,255,255,.40);
+  border: 1px solid rgba(15,23,42,.12);
+  border-radius: 14px;
+  padding: 8px 10px;
 }
 
 #view-knockout .btn-score{
   width:44px;
   height:44px;
   border-radius: 12px;
-  border: 1px solid rgba(148,163,184,.22);
-  background: rgba(2,6,23,.55);
-  color: var(--text-main);
-  font-weight: 900;
+  border: 1px solid rgba(15,23,42,.18);
+  background: rgba(255,255,255,.55);
+  color: rgba(15,23,42,.95);
+  font-weight: 950;
   font-size: 1.1rem;
   cursor:pointer;
   transition: background .15s, transform .1s;
 }
-
-#view-knockout .btn-score:hover{ background: rgba(51,65,85,.65); }
+#view-knockout .btn-score:hover{ background: rgba(59,130,246,.14); }
 #view-knockout .btn-score:active{ transform: scale(.95); }
 
 #view-knockout .score-display{
   min-width: 34px;
   text-align:center;
-  font-weight: 900;
+  font-weight: 950;
   font-size: 1.35rem;
+  color: rgba(15,23,42,.95);
 }
-
 #view-knockout .score-display.winner{ color: var(--success); }
 
 #view-knockout .knockout-actions{
@@ -948,7 +983,16 @@ body{
 
 /* ==========================
    ✅ WINNER (SCOPED)
+   ✅ MISMO FORMATO "PANEL CLARO" (como Registro/Grupos/KO)
    ========================== */
+
+/* (Opcional) Ocultar el tag "Ganador" si existe con estos selectores.
+   Cambia el selector por el real de tu HTML si es otro. */
+#view-winner #winner-badge,
+#view-winner .winner-badge{
+  display:none !important;
+}
+
 #view-winner .title{ margin: 10px 0 18px 0; }
 
 #view-winner .winner-card{
@@ -957,76 +1001,141 @@ body{
   padding: 0;
 }
 
+/* Panel principal: igual que tus paneles claros */
 #view-winner .winner-panel{
-  max-width: 520px;
+  max-width: 720px;
   margin: 0 auto;
-  padding: 36px 26px 22px 26px;
-  border-radius: 22px;
-  background: linear-gradient(180deg, rgba(30,41,59,.88), rgba(15,23,42,.88));
-  border: 1px solid rgba(148,163,184,.22);
-  box-shadow: 0 18px 50px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.04);
+  padding: 34px 26px 22px 26px;
+
+  background: rgba(230,236,235,.82);
+  border: var(--panel-border-w) solid var(--panel-border);
+  border-radius: var(--panel-radius);
+
+  box-shadow: 0 18px 40px rgba(0,0,0,.25);
+  backdrop-filter: blur(2px);
+
   text-align: center;
+  color: #0b1220;
+
+  position: relative;
+  overflow: hidden;
 }
 
+/* Glow superior tipo registro */
+#view-winner .winner-panel:before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  pointer-events:none;
+  background:
+    radial-gradient(650px 260px at 20% 0%, rgba(59,130,246,.18), transparent 55%),
+    radial-gradient(650px 260px at 80% 0%, rgba(234,179,8,.14), transparent 55%);
+  opacity:.75;
+}
+
+/* Watermark Warning (como Registro) */
+#view-winner .winner-panel:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background: url("../img/warning-logo.png") center / var(--wm-size) no-repeat;
+  opacity: .10; /* un pelín menos que registro para que no ensucie */
+  filter: grayscale(1) brightness(2.4) contrast(1.05);
+  mix-blend-mode: screen;
+  pointer-events:none;
+}
+
+/* Asegurar contenido sobre watermark */
+#view-winner .winner-panel > *{ position: relative; z-index: 1; }
+
+/* Corona arriba (más pro y alineada al estilo) */
 #view-winner .winner-crown{
-  font-size: 3.2rem;
+  font-size: 3.0rem;
   line-height: 1;
   margin-bottom: 8px;
+  filter: drop-shadow(0 10px 22px rgba(0,0,0,.22));
 }
 
+/* Subtítulo “GRAN CAMPEÓN” */
 #view-winner .winner-super{
-  font-weight: 900;
+  font-weight: 950;
   letter-spacing: .18em;
-  color: rgba(148,163,184,.85);
+  color: rgba(15,23,42,.70);
   font-size: 1.05rem;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
+  text-transform: uppercase;
 }
 
+/* Nombre campeón */
 #view-winner .winner-name{
-  font-weight: 900;
+  font-weight: 950;
   font-size: clamp(2.2rem, 4vw, 3.2rem);
   color: #f59e0b;
-  margin: 0 0 22px 0;
+  margin: 0 0 18px 0;
+  text-shadow: 0 10px 26px rgba(245,158,11,.18);
 }
 
+/* “Podio” sin relieves: filas limpias tipo chips/pills */
 #view-winner .podium{
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  margin-top: 6px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  margin-top: 10px;
 }
 
-#view-winner .podium-row{ padding-top: 6px; }
+/* Cada fila del podio */
+#view-winner .podium-row{
+  background: rgba(255,255,255,.55);
+  border: 1px solid rgba(15,23,42,.10);
+  border-radius: 16px;
+  padding: 14px 14px 12px 14px;
+  text-align:center;
+}
 
+/* Medalla */
 #view-winner .podium-medal{
-  font-size: 1.6rem;
+  font-size: 1.55rem;
   margin-bottom: 6px;
+  line-height:1;
 }
 
+/* Label 2do/3er */
 #view-winner .podium-label{
-  font-weight: 900;
-  color: #93c5fd;
+  font-weight: 950;
+  letter-spacing: .10em;
+  color: rgba(29,78,216,.88);
   margin-bottom: 6px;
+  text-transform: uppercase;
+  font-size: .86rem;
 }
+#view-winner .podium-label--third{ color: rgba(245,158,11,.95); }
 
-#view-winner .podium-label--third{ color: #f59e0b; }
-
+/* Nombre jugador 2do/3ro */
 #view-winner .podium-player{
-  font-weight: 900;
-  font-size: 2rem;
-  color: #ffffff;
+  font-weight: 950;
+  font-size: 1.9rem;
+  color: rgba(15,23,42,.95);
 }
 
+/* Botón inferior: alineado al resto */
 #view-winner .winner-actions{
-  margin-top: 26px;
+  margin-top: 18px;
   display:flex;
   justify-content:center;
 }
-
 #view-winner .winner-actions .btn{
   width: auto;
-  padding: 10px 18px;
-  border-radius: 12px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(0,0,0,.20);
+}
+
+/* Mobile */
+@media (max-width: 640px){
+  #view-winner .winner-panel{
+    padding: 28px 18px 18px 18px;
+  }
+  #view-winner .podium-player{ font-size: 1.65rem; }
 }
 
 /* ==========================

@@ -2,7 +2,7 @@
 import { state, saveState } from "../nucleo/estado.js";
 import { SoundFX } from "../servicios/audio.js";
 
-const TARGET = 4;
+const TARGET = 6;
 
 // PL (Puntos de Liga)
 const WIN_PL = 3;
@@ -229,10 +229,22 @@ export function adjustScore(groupId, matchId, sideIndex, delta) {
   const m = g.matches.find((x) => x.id === matchId);
   if (!m) return;
 
-  const side = sideIndex === 0 ? m.a : m.b;
+  const MAX_SCORE = 6;       // tope absoluto por match en grupos
+  const WIN_THRESHOLD = 4;   // desde aquí “ya ganó” (modo KO)
+  const LOSER_MAX = 3;       // si el rival ya ganó, tú solo puedes llegar a 3
 
-  // permitir sumar/restar (incluye fantasma simbólico)
-  side.score = Math.max(0, (side.score || 0) + delta);
+  const me = sideIndex === 0 ? m.a : m.b;
+  const other = sideIndex === 0 ? m.b : m.a;
+
+  const meNow = Number(me.score ?? 0);
+  const otherNow = Number(other.score ?? 0);
+
+  const next = meNow + delta;
+
+  // ✅ Si el rival ya está en 4+ y yo estoy intentando SUBIR, cap a 3
+  const maxAllowed = (delta > 0 && otherNow >= WIN_THRESHOLD) ? LOSER_MAX : MAX_SCORE;
+
+  me.score = Math.max(0, Math.min(maxAllowed, next));
 
   recalcularStatsGlobales();
 
