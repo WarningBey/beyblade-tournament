@@ -452,8 +452,8 @@ export function renderGlobalStandings() {
           <tr>
             <th style="width:44px;">#</th>
             <th>Blader</th>
-            <th style="width:70px;">PT</th>
             <th style="width:70px;">PL</th>
+            <th style="width:70px;">PT</th>
             <th style="width:70px;">PC</th>
           </tr>
         </thead>
@@ -464,8 +464,8 @@ export function renderGlobalStandings() {
             <tr>
               <td class="muted">${i + 1}</td>
               <td><strong>${escapeHtml(r.name)}</strong></td>
-              <td class="pt">${r.PT}</td>
               <td class="pf">${r.PL}</td>
+              <td class="pt">${r.PT}</td>
               <td class="pc">${r.PC}</td>
             </tr>
           `
