@@ -384,8 +384,8 @@ export function renderGeneralTable() {
             <th style="width:44px;">#</th>
             <th>BLADER (EDITAR)</th>
             <th style="width:110px;">GRUPO</th>
-            <th style="width:70px;">PT</th>
             <th style="width:70px;">PL</th>
+            <th style="width:70px;">PT</th>
             <th style="width:70px;">PC</th>
             <th style="width:70px;">WIN</th>
           </tr>
@@ -405,8 +405,8 @@ export function renderGeneralTable() {
                     <button class="edit-btn" type="button" onclick="editPlayerName(${idSafe})" title="Editar">✎</button>
                   </td>
                   <td class="muted">Grupo ${escapeHtml(r.group)}</td>
-                  <td class="pt">${r.PT}</td>
                   <td class="pf">${r.PL}</td>
+                  <td class="pt">${r.PT}</td>
                   <td class="pc">${r.PC}</td>
                   <td class="win">${r.WIN}</td>
                 </tr>
