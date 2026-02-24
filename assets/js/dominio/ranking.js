@@ -79,17 +79,21 @@ export function recalcularRankingDesdeGrupos() {
 
 export function obtenerRankingGlobal() {
   return [...(state.players || [])].sort((a, b) => {
-    const PTa = Number(a.pf ?? 0), PTb = Number(b.pf ?? 0);
-    if (PTb !== PTa) return PTb - PTa;
-
-    const PLa = Number(a.points ?? 0), PLb = Number(b.points ?? 0);
-    if (PLb !== PLa) return PLb - PLa;
-
-    const PCa = Number(a.pc ?? 0), PCb = Number(b.pc ?? 0);
-    if (PCa !== PCb) return PCa - PCb;
-
-    return String(a.name).localeCompare(String(b.name), "es");
-  });
+  // 1️⃣ PL
+  const PLa = Number(a.points ?? 0), PLb = Number(b.points ?? 0);
+  if (PLb !== PLa) return PLb - PLa;
+  // 2️⃣ PT
+  const PTa = Number(a.pf ?? 0), PTb = Number(b.pf ?? 0);
+  if (PTb !== PTa) return PTb - PTa;
+  // 3️⃣ PC
+  const PCa = Number(a.pc ?? 0), PCb = Number(b.pc ?? 0);
+  if (PCa !== PCb) return PCa - PCb;
+  // 4️⃣ WIN
+  const WINa = Number(a.wins ?? 0), WINb = Number(b.wins ?? 0);
+  if (WINb !== WINa) return WINb - WINa;
+  // 5️⃣ Nombre
+  return String(a.name).localeCompare(String(b.name), "es");
+});
 }
 
 export function obtenerTopN(n = 8) {

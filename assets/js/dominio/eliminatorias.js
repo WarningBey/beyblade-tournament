@@ -35,15 +35,15 @@ function buildRankedPlayers() {
   const rows = (state.players || []).map((p) => ({
     id: p.id,
     name: p.name,
-    PT: Number(p.pf ?? 0),
     PL: Number(p.points ?? 0),
+    PT: Number(p.pf ?? 0),
     PC: Number(p.pc ?? 0),
     WIN: Number(p.wins ?? 0),
   }));
 
   rows.sort((a, b) => {
-    if (b.PT !== a.PT) return b.PT - a.PT;
     if (b.PL !== a.PL) return b.PL - a.PL;
+    if (b.PT !== a.PT) return b.PT - a.PT;
     if (a.PC !== b.PC) return a.PC - b.PC;
     if (b.WIN !== a.WIN) return b.WIN - a.WIN;
     return String(a.name).localeCompare(String(b.name), "es");

@@ -137,6 +137,8 @@ export function generateGroups() {
   if (state.players.length < 2) return;
 
   const shuffled = shuffle(state.players);
+  // ✅ NUEVO: evita reusar el mismo jugador como fantasma más de una vez (en toda la generación)
+  const usedGhostSources = new Set();
 
   const maxGroups = computeMaxGroups(shuffled.length);
   const desired = Number(state.desiredGroupCount || 1);
@@ -179,7 +181,13 @@ export function generateGroups() {
           if (!byeSlot?.isPadBye) return;
           if (!real || real.isBye) return;
 
-          const ext = pickRandom(externalPool);
+          // ✅ NUEVO: pool filtrado para no repetir la fuente del fantasma
+          const available = externalPool.filter((p) => !usedGhostSources.has(p.id));
+          const ext = available.length ? pickRandom(available) : null;
+
+          // Si hay uno disponible, lo marcamos como usado
+          if (ext) usedGhostSources.add(ext.id);
+
           const ghost = makeGhostOpponent(ext, groupName, byeSlot.id);
 
           const matchId = `${g.id}-R${roundIndex + 1}-${real.id}-${ghost.id}`;
@@ -328,13 +336,13 @@ export async function copyStandingsToClipboard() {
       .slice()
       .map((p) => ({
         name: p.name,
-        PT: Number(p.pf ?? 0),
         PL: Number(p.points ?? 0),
+        PT: Number(p.pf ?? 0),
         PC: Number(p.pc ?? 0),
       }))
       .sort((a, b) => {
-        if (b.PT !== a.PT) return b.PT - a.PT;
         if (b.PL !== a.PL) return b.PL - a.PL;
+        if (b.PT !== a.PT) return b.PT - a.PT;
         if (a.PC !== b.PC) return a.PC - b.PC;
         return String(a.name).localeCompare(String(b.name), "es");
       });
