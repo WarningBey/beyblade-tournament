@@ -95,11 +95,10 @@ function applyRoundsModeUI() {
 }
 
 function getAllowedTopOptions(totalPlayers) {
-  const base = [2, 4, 8];
-  if (totalPlayers >= 30) base.push(16);
-  if (totalPlayers >= 60) base.push(32);
-  if (totalPlayers >= 120) base.push(64);
-  return base.filter((n) => n <= totalPlayers && n >= 2);
+  const total = Math.max(0, Number(totalPlayers || 0));
+  const opts = [];
+  for (let n = 2; n <= total; n *= 2) opts.push(n);
+  return opts.length ? opts : [2]; // fallback seguro
 }
 
 function pickDefaultTop(totalPlayers, allowed) {
