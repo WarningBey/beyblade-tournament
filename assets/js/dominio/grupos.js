@@ -2,8 +2,6 @@
 import { state, saveState } from "../nucleo/estado.js";
 import { SoundFX } from "../servicios/audio.js";
 
-const TARGET = 6;
-
 // PL (Puntos de Liga)
 const WIN_PL = 3;
 const LOSS_PL = 1;
@@ -122,7 +120,7 @@ function buildExternalPoolFromLocalGroups(allGroups, currentGroupId) {
  * ✅ Fantasma estable por SLOT (anti duplicados)
  * - Si el grupo chico necesita 1 fantasma, será SIEMPRE el mismo ID
  */
-function makeGhostOpponent(externalPlayer, groupName, byeSlotId) {
+function makeGhostOpponent(externalPlayer, groupName, byeSlotId, targetGroupId, sourceGroupId) {
   const nameBase = externalPlayer?.name ? externalPlayer.name : `Fantasma ${groupName}`;
   return {
     id: `GHOST_${groupName}_${byeSlotId}`,
@@ -130,6 +128,8 @@ function makeGhostOpponent(externalPlayer, groupName, byeSlotId) {
     score: 0,
     isGhost: true,
     ghostOf: externalPlayer?.id || null,
+    sourceGroupId: sourceGroupId ?? null,
+    targetGroupId: targetGroupId ?? null,
   };
 }
 
@@ -188,7 +188,8 @@ export function generateGroups() {
           // Si hay uno disponible, lo marcamos como usado
           if (ext) usedGhostSources.add(ext.id);
 
-          const ghost = makeGhostOpponent(ext, groupName, byeSlot.id);
+          const sourceGroupId = ext ? groups.find((grp) => grp.name === ext.group)?.id ?? null : null;
+          const ghost = makeGhostOpponent(ext, groupName, byeSlot.id, g.id, sourceGroupId);
 
           const matchId = `${g.id}-R${roundIndex + 1}-${real.id}-${ghost.id}`;
 
@@ -196,7 +197,7 @@ export function generateGroups() {
             id: matchId,
             round: roundIndex + 1,
             a: { id: real.id, name: real.name, score: 0, isGhost: false },
-            b: { id: ghost.id, name: ghost.name, score: 0, isGhost: true, ghostOf: ghost.ghostOf },
+            b: { id: ghost.id, name: ghost.name, score: 0, isGhost: true, ghostOf: ghost.ghostOf, sourceGroupId: ghost.sourceGroupId, targetGroupId: ghost.targetGroupId },
             meta: { hasGhost: true, padGhost: true, byeSlotId: byeSlot.id },
           });
 
@@ -257,9 +258,8 @@ export function adjustScore(groupId, matchId, sideIndex, delta) {
   recalcularStatsGlobales();
 
   saveState();
-  window.renderGroups?.();
+  window.renderMatchRow?.(groupId, matchId);
   window.renderGeneralTable?.();
-  window.renderGlobalStandings?.();
 }
 
 /**
@@ -339,21 +339,23 @@ export async function copyStandingsToClipboard() {
         PL: Number(p.points ?? 0),
         PT: Number(p.pf ?? 0),
         PC: Number(p.pc ?? 0),
+        WIN: Number(p.wins ?? 0),
       }))
       .sort((a, b) => {
         if (b.PL !== a.PL) return b.PL - a.PL;
         if (b.PT !== a.PT) return b.PT - a.PT;
         if (a.PC !== b.PC) return a.PC - b.PC;
+        if (b.WIN !== a.WIN) return b.WIN - a.WIN;
         return String(a.name).localeCompare(String(b.name), "es");
       });
 
     const text = rows
-      .map((r, i) => `${i + 1}. ${r.name} - PT ${r.PT} | PL ${r.PL} | PC ${r.PC}`)
+      .map((r, i) => `${i + 1}. ${r.name} - PT ${r.PT} | PL ${r.PL} | PC ${r.PC} | WIN ${r.WIN}`)
       .join("\n");
 
     await navigator.clipboard.writeText(text);
     window.showToast?.("Tabla copiada ✅");
   } catch {
-    alert("No se pudo copiar. Revisa permisos del navegador.");
+    window.showToast?.("❌ No se pudo copiar — revisá permisos del navegador");
   }
 }

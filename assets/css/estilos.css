@@ -604,8 +604,7 @@ body{
 
 /* ✅ Cards de grupo (estilo registro) */
 #groups-container > div,
-#groups-container .group-card,
-#groups-container .group{
+#groups-container .group-card{
   background: rgba(230,236,235,.82);
   border: var(--panel-border-w) solid var(--panel-border);
   border-radius: var(--panel-radius);
@@ -618,8 +617,7 @@ body{
 }
 
 #groups-container > div:before,
-#groups-container .group-card:before,
-#groups-container .group:before{
+#groups-container .group-card:before{
   content:"";
   position:absolute;
   inset:-2px;
@@ -631,8 +629,7 @@ body{
 }
 
 #groups-container > div:after,
-#groups-container .group-card:after,
-#groups-container .group:after{
+#groups-container .group-card:after{
   content:"";
   position:absolute;
   inset:0;
@@ -644,15 +641,13 @@ body{
 }
 
 #groups-container > div > *,
-#groups-container .group-card > *,
-#groups-container .group > *{
+#groups-container .group-card > *{
   position:relative;
   z-index:1;
 }
 
 /* Título */
-#groups-container h3,
-#groups-container .group-title{
+#groups-container h3{
   margin: 0 0 12px 0;
   font-size: 1.15rem;
   font-weight: 950;

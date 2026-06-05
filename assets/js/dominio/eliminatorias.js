@@ -1,6 +1,7 @@
 // assets/js/dominio/eliminatorias.js
 import { state, saveState } from "../nucleo/estado.js";
 import { startContinuousConfetti } from "../servicios/confeti.js";
+import { obtenerRankingGlobal } from "./ranking.js";
 
 const TARGET = 4;
 
@@ -22,36 +23,6 @@ function seedOrder(n) {
   return order;
 }
 
-/**
- * ✅ Ranking global con MÉTRICAS DEFINITIVAS:
- * Orden: PT desc → PL desc → PC asc → (wins desc) → name asc
- *
- * Importante:
- * - PT = p.pf
- * - PL = p.points
- * - PC = p.pc
- */
-function buildRankedPlayers() {
-  const rows = (state.players || []).map((p) => ({
-    id: p.id,
-    name: p.name,
-    PL: Number(p.points ?? 0),
-    PT: Number(p.pf ?? 0),
-    PC: Number(p.pc ?? 0),
-    WIN: Number(p.wins ?? 0),
-  }));
-
-  rows.sort((a, b) => {
-    if (b.PL !== a.PL) return b.PL - a.PL;
-    if (b.PT !== a.PT) return b.PT - a.PT;
-    if (a.PC !== b.PC) return a.PC - b.PC;
-    if (b.WIN !== a.WIN) return b.WIN - a.WIN;
-    return String(a.name).localeCompare(String(b.name), "es");
-  });
-
-  return rows;
-}
-
 function getAvailableKnockoutSizes(totalPlayers) {
   const total = Math.max(0, Number(totalPlayers || 0));
   const opts = [];
@@ -62,16 +33,13 @@ function getAvailableKnockoutSizes(totalPlayers) {
 function clampKnockoutSize(desired, totalPlayers) {
   const avail = getAvailableKnockoutSizes(totalPlayers);
   if (!avail.length) return 2;
-
   const d = Number(desired || avail[avail.length - 1]);
   if (avail.includes(d)) return d;
-
   return avail[avail.length - 1];
 }
 
 function getRoundLabel(roundNumber, bracketSize, isFinales = false) {
   const alive = bracketSize / Math.pow(2, roundNumber - 1);
-
   if (isFinales) return "Finales";
   if (alive === 2) return "Final";
   if (alive === 4) return "Semifinales";
@@ -89,7 +57,7 @@ export function setKnockoutSize(val) {
 }
 
 export function startKnockout() {
-  const ranked = buildRankedPlayers();
+  const ranked = obtenerRankingGlobal();
   const total = ranked.length;
 
   const topSelected = clampKnockoutSize(state.knockoutSize || 8, total);
@@ -101,6 +69,7 @@ export function startKnockout() {
   if (pool.length < 2) return;
 
   state.knockoutBracketSize = bracketSize;
+  state.currentKnockoutRound = 1;
 
   const order = seedOrder(bracketSize);
   const matches = [];
@@ -109,7 +78,6 @@ export function startKnockout() {
   for (let i = 0; i < order.length; i += 2) {
     const seedA = order[i];
     const seedB = order[i + 1];
-
     const a = pool[seedA - 1];
     const b = pool[seedB - 1];
 
@@ -137,35 +105,19 @@ export function startKnockout() {
 
   saveState();
   window.restoreUI?.();
-
-  updateKnockoutRoundSelect();
+  window.updateKnockoutSelector?.();
   window.renderBracket?.();
 }
 
-function updateKnockoutRoundSelect() {
-  const sel = document.getElementById("knockout-round-select");
-  if (!sel) return;
-
-  const rounds = (state.knockoutRounds || []).map((r) => r.round);
-  sel.innerHTML = rounds.map((r) => `<option value="${r}">${r}</option>`).join("");
-
-  if (!sel.value && rounds[0]) sel.value = String(rounds[0]);
-
-  const badge = document.getElementById("round-badge");
-  const roundObj = (state.knockoutRounds || []).find((r) => String(r.round) === String(sel.value));
-  if (badge) badge.textContent = roundObj?.label || `Ronda ${sel.value || 1}`;
-}
-
 export function selectKnockoutRound(value) {
-  const badge = document.getElementById("round-badge");
-  const roundObj = (state.knockoutRounds || []).find((r) => String(r.round) === String(value));
-  if (badge) badge.textContent = roundObj?.label || `Ronda ${value}`;
+  state.currentKnockoutRound = Number(value) || 1;
+  saveState();
+  window.updateKnockoutSelector?.();
   window.renderBracket?.();
 }
 
 export function adjustKnockoutScore(matchId, side, delta) {
-  const roundSel = document.getElementById("knockout-round-select");
-  const currentRound = Number(roundSel?.value || 1);
+  const currentRound = Number(state.currentKnockoutRound || 1);
 
   const roundObj = (state.knockoutRounds || []).find((r) => Number(r.round) === currentRound);
   if (!roundObj) return;
@@ -179,24 +131,18 @@ export function adjustKnockoutScore(matchId, side, delta) {
   const aNow = Number(A.score ?? 0);
   const bNow = Number(B.score ?? 0);
 
-  // ✅ Si el rival ya ganó (>=TARGET), tú solo puedes subir hasta TARGET-1 (3)
-  const maxA = (bNow >= TARGET) ? (TARGET - 1) : 6;
-  const maxB = (aNow >= TARGET) ? (TARGET - 1) : 6;
+  const maxA = bNow >= TARGET ? TARGET - 1 : 6;
+  const maxB = aNow >= TARGET ? TARGET - 1 : 6;
 
   if (side === 0) {
-    const next = Number(A.score ?? 0) + delta;
-    A.score = Math.max(0, Math.min(maxA, next));
+    A.score = Math.max(0, Math.min(maxA, aNow + delta));
   } else {
-    const next = Number(B.score ?? 0) + delta;
-    B.score = Math.max(0, Math.min(maxB, next));
+    B.score = Math.max(0, Math.min(maxB, bNow + delta));
   }
 
-  // Recalcular ganador
   match.winner = null;
-
   const aS = Number(A.score ?? 0);
   const bS = Number(B.score ?? 0);
-
   if (aS >= TARGET && aS > bS) match.winner = { id: A.id, name: A.name };
   else if (bS >= TARGET && bS > aS) match.winner = { id: B.id, name: B.name };
 
@@ -204,132 +150,86 @@ export function adjustKnockoutScore(matchId, side, delta) {
   window.renderBracket?.();
 }
 
+// ─── advanceRound helpers ────────────────────────────────────────────────────
 
-export function advanceRound() {
-  const roundSel = document.getElementById("knockout-round-select");
-  const currentRound = Number(roundSel?.value || 1);
+function resolveFinalesRound(matches) {
+  const finalMatch = matches.find((m) => m.type === "FINAL");
+  const thirdMatch = matches.find((m) => m.type === "THIRD");
 
-  const roundObj = (state.knockoutRounds || []).find((r) => Number(r.round) === currentRound);
-  if (!roundObj) return;
-
-  const matches = roundObj.matches || [];
-  if (!matches.length) return;
-
-  const pending = matches.some((m) => !m.winner);
-  if (pending) {
-    alert("Faltan combates por terminar.");
-    return;
+  if (!finalMatch?.winner) {
+    window.showToast?.("⚠️ Falta terminar la Gran Final");
+    return false;
+  }
+  if (!thirdMatch?.winner) {
+    window.showToast?.("⚠️ Falta terminar el 3er lugar");
+    return false;
   }
 
-  if (roundObj.isFinales) {
-    const finalMatch = matches.find((m) => m.type === "FINAL");
-    const thirdMatch = matches.find((m) => m.type === "THIRD");
+  const champ = { id: finalMatch.winner.id, name: finalMatch.winner.name };
+  const second =
+    finalMatch.winner.id === finalMatch.a.id
+      ? { id: finalMatch.b.id, name: finalMatch.b.name }
+      : { id: finalMatch.a.id, name: finalMatch.a.name };
+  const third = { id: thirdMatch.winner.id, name: thirdMatch.winner.name };
 
-    if (!finalMatch?.winner) {
-      alert("Falta terminar la Gran Final.");
-      return;
-    }
-    if (!thirdMatch?.winner) {
-      alert("Falta terminar el combate por el 3er lugar.");
-      return;
-    }
+  state.winner = champ;
+  state.podium = { first: champ, second, third };
+  state.phase = "winner";
+  saveState();
 
-    const champ = { id: finalMatch.winner.id, name: finalMatch.winner.name };
+  startContinuousConfetti();
+  window.restoreUI?.();
+  return true;
+}
 
-    const second =
-      finalMatch.winner.id === finalMatch.a.id
-        ? { id: finalMatch.b.id, name: finalMatch.b.name }
-        : { id: finalMatch.a.id, name: finalMatch.a.name };
+function buildSemiToFinalesRound(winners, losers, nextRound) {
+  const bracketSize = Number(state.knockoutBracketSize || 0);
 
-    const third = { id: thirdMatch.winner.id, name: thirdMatch.winner.name };
-
-    state.winner = champ;
-    state.podium = { first: champ, second, third };
-
-    state.phase = "winner";
-    saveState();
-
-    startContinuousConfetti();
-    window.restoreUI?.();
-    return;
-  }
-
-  const winners = matches.map((m) => ({
-    id: m.winner.id,
-    name: m.winner.name,
-    score: 0,
-  }));
-
-  if (winners.length === 1) {
-    state.winner = { id: winners[0].id, name: winners[0].name };
-    state.phase = "winner";
-    saveState();
-
-    startContinuousConfetti();
-    window.restoreUI?.();
-    return;
-  }
-
-  const nextRound = currentRound + 1;
-  const nextMatches = [];
-
-  const isSemis = matches.length === 2 && !roundObj.isFinales;
-
-  if (isSemis) {
-    const losers = matches.map((m) => {
-      const aIsWinner = m.winner.id === m.a.id;
-      const loser = aIsWinner ? m.b : m.a;
-      return { id: loser.id, name: loser.name, score: 0 };
-    });
-
-    nextMatches.push({
+  const nextMatches = [
+    {
       id: `R${nextRound}-FINAL-${winners[0].id}-${winners[1].id}`,
       round: nextRound,
       type: "FINAL",
       a: { ...winners[0], score: 0 },
       b: { ...winners[1], score: 0 },
       winner: null,
-    });
-
-    nextMatches.push({
+    },
+    {
       id: `R${nextRound}-THIRD-${losers[0].id}-${losers[1].id}`,
       round: nextRound,
       type: "THIRD",
       a: { ...losers[0], score: 0 },
       b: { ...losers[1], score: 0 },
       winner: null,
-    });
+    },
+  ];
 
-    const bracketSize = Number(state.knockoutBracketSize || 0);
+  state.knockoutRounds = [
+    ...(state.knockoutRounds || []),
+    {
+      round: nextRound,
+      label: getRoundLabel(nextRound, bracketSize, true),
+      isFinales: true,
+      matches: nextMatches,
+    },
+  ];
 
-    state.knockoutRounds = [
-      ...(state.knockoutRounds || []),
-      {
-        round: nextRound,
-        label: getRoundLabel(nextRound, bracketSize, true),
-        isFinales: true,
-        matches: nextMatches,
-      },
-    ];
+  state.knockoutMatches = nextMatches;
+  state.currentKnockoutRound = nextRound;
+  saveState();
 
-    state.knockoutMatches = nextMatches;
-    saveState();
-    window.restoreUI?.();
+  window.restoreUI?.();
+  window.updateKnockoutSelector?.();
+  window.renderBracket?.();
+}
 
-    const sel = document.getElementById("knockout-round-select");
-    if (sel) sel.value = String(nextRound);
-
-    const badge = document.getElementById("round-badge");
-    if (badge) badge.textContent = "Finales";
-
-    window.renderBracket?.();
-    return;
-  }
+function buildNormalNextRound(winners, nextRound) {
+  const bracketSize = Number(state.knockoutBracketSize || 0);
+  const nextMatches = [];
 
   for (let i = 0; i < winners.length; i += 2) {
     const a = winners[i];
     const b = winners[i + 1];
-
     nextMatches.push({
       id: `R${nextRound}-${a.id}-${b.id}`,
       round: nextRound,
@@ -339,8 +239,6 @@ export function advanceRound() {
       winner: null,
     });
   }
-
-  const bracketSize = Number(state.knockoutBracketSize || 0);
 
   state.knockoutRounds = [
     ...(state.knockoutRounds || []),
@@ -353,15 +251,56 @@ export function advanceRound() {
   ];
 
   state.knockoutMatches = nextMatches;
+  state.currentKnockoutRound = nextRound;
   saveState();
+
   window.restoreUI?.();
-
-  const sel = document.getElementById("knockout-round-select");
-  if (sel) sel.value = String(nextRound);
-
-  const badge = document.getElementById("round-badge");
-  const roundNew = state.knockoutRounds.find((r) => r.round === nextRound);
-  if (badge) badge.textContent = roundNew?.label || `Ronda ${nextRound}`;
-
+  window.updateKnockoutSelector?.();
   window.renderBracket?.();
+}
+
+// ─── advanceRound orchestrator ───────────────────────────────────────────────
+
+export function advanceRound() {
+  const currentRound = Number(state.currentKnockoutRound || 1);
+  const roundObj = (state.knockoutRounds || []).find((r) => Number(r.round) === currentRound);
+  if (!roundObj) return;
+
+  const matches = roundObj.matches || [];
+  if (!matches.length) return;
+
+  if (matches.some((m) => !m.winner)) {
+    window.showToast?.("⚠️ Faltan combates por terminar");
+    return;
+  }
+
+  if (roundObj.isFinales) {
+    resolveFinalesRound(matches);
+    return;
+  }
+
+  const winners = matches.map((m) => ({ id: m.winner.id, name: m.winner.name, score: 0 }));
+
+  if (winners.length === 1) {
+    state.winner = { id: winners[0].id, name: winners[0].name };
+    state.phase = "winner";
+    saveState();
+    startContinuousConfetti();
+    window.restoreUI?.();
+    return;
+  }
+
+  const nextRound = currentRound + 1;
+  const isSemis = matches.length === 2 && !roundObj.isFinales;
+
+  if (isSemis) {
+    const losers = matches.map((m) => {
+      const loser = m.winner.id === m.a.id ? m.b : m.a;
+      return { id: loser.id, name: loser.name, score: 0 };
+    });
+    buildSemiToFinalesRound(winners, losers, nextRound);
+    return;
+  }
+
+  buildNormalNextRound(winners, nextRound);
 }

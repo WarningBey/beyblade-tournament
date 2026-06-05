@@ -76,16 +76,14 @@ export function removePlayer(id) {
   window.renderPlayerList?.();
 }
 
-export function editPlayerName(id) {
+export function editPlayerName(id, newName) {
+  if (!newName || !String(newName).trim()) return;
   const p = state.players.find((x) => x.id === id);
   if (!p) return;
-
-  const newName = prompt("Nuevo nombre:", p.name);
-  if (!newName) return;
-
-  p.name = newName.trim();
+  p.name = String(newName).trim();
   saveState();
   window.renderPlayerList?.();
+  window.renderGeneralTable?.();
 }
 
 /**
@@ -96,15 +94,6 @@ export function updateGroupCount(val) {
   const n = Math.max(1, Math.min(maxGroups, Number(val || 1)));
 
   state.desiredGroupCount = n;
-
-  const slider = document.getElementById("group-slider");
-  if (slider) {
-    slider.max = String(maxGroups);
-    slider.value = String(n);
-  }
-
-  const label = document.getElementById("group-count-label");
-  if (label) label.textContent = String(n);
 
   // ✅ en grupos, recalcula rondas automáticas cuando cambias grupos
   applyAutoRoundsIfGroups();

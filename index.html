@@ -60,6 +60,7 @@
         <button class="nav-link" onclick="downloadBackup()">Exportar</button>
         <button class="nav-link" onclick="goBackStep()">Volver</button>
         <button class="nav-link nav-link--active" onclick="goHome()">Inicio</button>
+        <button class="nav-link" id="sound-icon" onclick="toggleMute()" title="Silenciar / Activar sonido" aria-label="Silenciar">🔊</button>
       </nav>
     </header>
 
@@ -165,7 +166,7 @@
             <select
               id="knockout-size-select"
               class="select-top select-top--small"
-              onchange="setKnockoutSize(this.value); renderGeneralTable(); renderGlobalStandings();"
+              onchange="setKnockoutSize(this.value); renderGeneralTable();"
             >
               <option value="2">Top 2</option>
               <option value="4">Top 4</option>
@@ -193,7 +194,7 @@
       <div class="knockout-stage">
         <select
           id="knockout-round-select"
-          class="input-dark input-round hidden"
+          class="input-dark hidden"
           onchange="selectKnockoutRound(this.value)">
         </select>
 

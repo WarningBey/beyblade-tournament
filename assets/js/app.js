@@ -25,11 +25,11 @@ import {
   showToast,
   renderPlayerList,
   renderGroups,
-  renderGeneralTable, 
-  renderGlobalStandings,
+  renderGeneralTable,
   renderBracket,
   renderWinnerView,
   updateKnockoutSelector,
+  renderMatchRow,
 } from "./ui/render.js";
 
 import { registrarEventosUI } from "./ui/eventos.js";
@@ -41,6 +41,16 @@ import { addPlayer, removePlayer, editPlayerName, setRounds, updateGroupCount } 
 import { generateGroups, redistributeGroups, adjustScore, copyStandingsToClipboard } from "./dominio/grupos.js";
 import { startKnockout, advanceRound, selectKnockoutRound, setKnockoutSize, adjustKnockoutScore } from "./dominio/eliminatorias.js";
 import { recalcularRankingDesdeGrupos, obtenerRankingGlobal, obtenerTopN } from "./dominio/ranking.js";
+
+// =========================
+// WRAPPERS UI (leen DOM, luego delegan a dominio)
+// =========================
+function editPlayerNameUI(id) {
+  const p = state.players.find((x) => x.id === id);
+  if (!p) return;
+  const newName = prompt("Nuevo nombre:", p.name);
+  if (newName) editPlayerName(id, newName);
+}
 
 // =========================
 // API GLOBAL (para onclick del HTML)
@@ -71,6 +81,7 @@ function exponerAPI() {
     addPlayer,
     removePlayer,
     editPlayerName,
+    editPlayerNameUI,
     setRounds,
     updateGroupCount,
 
@@ -89,7 +100,7 @@ function exponerAPI() {
 
     renderPlayerList,
     renderGroups,
-    renderGlobalStandings,
+    renderMatchRow,
     renderBracket,
     renderWinnerView,
     updateKnockoutSelector,

@@ -16,7 +16,7 @@ export function downloadBackup() {
 
     window.showToast?.("Archivo Exportado");
   } catch {
-    alert("No se pudo exportar el archivo.");
+    window.showToast?.("❌ No se pudo exportar el archivo");
   }
 }
 
@@ -39,10 +39,10 @@ export function loadTournamentFile(input) {
         window.restoreUI?.();
         window.showToast?.("Torneo Cargado Exitosamente");
       } else {
-        alert("Error: El archivo no es válido o está dañado.");
+        window.showToast?.("❌ Archivo inválido o dañado");
       }
     } catch {
-      alert("Error al leer el archivo.");
+      window.showToast?.("❌ Error al leer el archivo");
     }
   };
 

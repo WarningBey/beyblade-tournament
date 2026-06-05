@@ -17,7 +17,6 @@ export function restoreUI() {
   if (state.phase === "groups") {
     document.getElementById("view-groups")?.classList.remove("hidden");
     window.renderGroups?.();
-    window.renderGlobalStandings?.();
   }
 
   if (state.phase === "knockout") {

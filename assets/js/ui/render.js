@@ -1,5 +1,6 @@
 // assets/js/ui/render.js
 import { state, saveState } from "../nucleo/estado.js";
+import { obtenerRankingGlobal } from "../dominio/ranking.js";
 
 export function showToast(msg = "Guardado") {
   const t = document.getElementById("toast");
@@ -166,7 +167,7 @@ export function renderPlayerList() {
     btn.type = "button";
     btn.title = "Eliminar";
     btn.textContent = "×";
-    btn.addEventListener("click", () => window.removePlayer(p.id));
+    btn.onclick = () => window.removePlayer(p.id);
 
     item.appendChild(nombre);
     item.appendChild(btn);
@@ -232,7 +233,7 @@ export function renderGroups() {
             <th title="PT (Puntos Totales)" style="color:var(--gold)">PT</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="mini-table-body-${g.id}">
           ${tableRows}
         </tbody>
       </table>
@@ -259,6 +260,7 @@ export function renderGroups() {
 
       const line = document.createElement("div");
       line.className = "match-row";
+      line.dataset.matchId = m.id;
 
       const aScore = m.a.score ?? 0;
       const bScore = m.b.score ?? 0;
@@ -281,7 +283,7 @@ export function renderGroups() {
 
         <div class="score-box">
           <button class="score-btn" onclick="adjustScore(${g.id}, '${m.id}', 0, -1)">−</button>
-          <div class="score-num score-display ${aWins ? "winner" : ""}">${aScore}</div>
+          <div id="score-a-${m.id}" class="score-num score-display ${aWins ? "winner" : ""}">${aScore}</div>
           <button class="score-btn" onclick="adjustScore(${g.id}, '${m.id}', 0, 1)">+</button>
         </div>
 
@@ -289,7 +291,7 @@ export function renderGroups() {
 
         <div class="score-box">
           <button class="score-btn" onclick="adjustScore(${g.id}, '${m.id}', 1, -1)">−</button>
-          <div class="score-num score-display ${bWins ? "winner" : ""}">${bScore}</div>
+          <div id="score-b-${m.id}" class="score-num score-display ${bWins ? "winner" : ""}">${bScore}</div>
           <button class="score-btn" onclick="adjustScore(${g.id}, '${m.id}', 1, 1)">+</button>
         </div>
 
@@ -339,6 +341,71 @@ function buildGroupStatsFromMatches(g) {
   return map;
 }
 
+function renderGroupMiniTable(g) {
+  const tbody = document.getElementById(`mini-table-body-${g.id}`);
+  if (!tbody) return;
+
+  const stats = buildGroupStatsFromMatches(g);
+  tbody.innerHTML = [...stats.values()]
+    .sort((a, b) => (b.win - a.win) || (b.pt - a.pt) || a.name.localeCompare(b.name))
+    .map(
+      (s, i) => `
+      <tr>
+        <td class="muted">${i + 1}</td>
+        <td style="font-weight:bold;" class="${s.isGhost ? "is-ghost" : ""}">${escapeHtml(s.name)}</td>
+        <td class="pt" style="font-weight:bold; color:var(--success)">${s.win}</td>
+        <td class="pf">${s.pt}</td>
+      </tr>`
+    )
+    .join("");
+}
+
+export function renderMatchRow(groupId, matchId) {
+  const g = (state.groups || []).find((x) => x.id === Number(groupId));
+  if (!g) return;
+
+  const m = (g.matches || []).find((x) => x.id === matchId);
+  if (!m) return;
+
+  const row = document.querySelector(`.match-row[data-match-id="${CSS.escape(String(matchId))}"]`);
+  if (!row) { window.renderGroups?.(); return; }
+
+  const TARGET = 4;
+  const aScore = m.a.score ?? 0;
+  const bScore = m.b.score ?? 0;
+  const aWins = aScore >= TARGET && aScore > bScore;
+  const bWins = bScore >= TARGET && bScore > aScore;
+  const done = aScore >= TARGET || bScore >= TARGET;
+  const aGhost = !!m.a.isGhost;
+  const bGhost = !!m.b.isGhost;
+
+  row.style.background = done ? "rgba(0,0,0,0.2)" : "transparent";
+
+  row.innerHTML = `
+    <div class="match-row__name match-row__name--right player-name-match ${aGhost ? "is-ghost" : ""} ${aWins ? "winner" : ""}"
+         title="${escapeHtml(m.a.name)}">
+      ${escapeHtml(m.a.name)}
+    </div>
+    <div class="score-box">
+      <button class="score-btn" onclick="adjustScore(${g.id}, '${m.id}', 0, -1)">−</button>
+      <div id="score-a-${m.id}" class="score-num score-display ${aWins ? "winner" : ""}">${aScore}</div>
+      <button class="score-btn" onclick="adjustScore(${g.id}, '${m.id}', 0, 1)">+</button>
+    </div>
+    <div class="vs-sep">:</div>
+    <div class="score-box">
+      <button class="score-btn" onclick="adjustScore(${g.id}, '${m.id}', 1, -1)">−</button>
+      <div id="score-b-${m.id}" class="score-num score-display ${bWins ? "winner" : ""}">${bScore}</div>
+      <button class="score-btn" onclick="adjustScore(${g.id}, '${m.id}', 1, 1)">+</button>
+    </div>
+    <div class="match-row__name match-row__name--left player-name-match ${bGhost ? "is-ghost" : ""} ${bWins ? "winner" : ""}"
+         title="${escapeHtml(m.b.name)}">
+      ${escapeHtml(m.b.name)}
+    </div>
+  `;
+
+  renderGroupMiniTable(g);
+}
+
 /**
  * ✅ TABLA GENERAL (OFICIAL)
  * Orden: PT desc → PL desc → PC asc (→ WIN desc → name asc)
@@ -354,7 +421,7 @@ export function renderGeneralTable() {
 
   syncTopSelectOptions();
 
-  const rows = [...(state.players || [])].map((p) => ({
+  const rows = obtenerRankingGlobal().map((p) => ({
     id: p.id,
     name: p.name,
     group: p.group || "-",
@@ -363,14 +430,6 @@ export function renderGeneralTable() {
     PC: Number(p.pc ?? 0),
     WIN: Number(p.wins ?? 0),
   }));
-
-  rows.sort((a, b) => {
-    if (b.PL !== a.PL) return b.PL - a.PL;
-    if (b.PT !== a.PT) return b.PT - a.PT;
-    if (a.PC !== b.PC) return a.PC - b.PC;
-    if (b.WIN !== a.WIN) return b.WIN - a.WIN;
-    return String(a.name).localeCompare(String(b.name), "es");
-  });
 
   const topN = getTopN();
   const cutIndex = Math.min(topN, rows.length);
@@ -401,7 +460,7 @@ export function renderGeneralTable() {
                   <td class="muted">${i + 1}</td>
                   <td class="name-cell">
                     <span class="name">${escapeHtml(r.name)}</span>
-                    <button class="edit-btn" type="button" onclick="editPlayerName(${idSafe})" title="Editar">✎</button>
+                    <button class="edit-btn" type="button" onclick="editPlayerNameUI(${idSafe})" title="Editar">✎</button>
                   </td>
                   <td class="muted">Grupo ${escapeHtml(r.group)}</td>
                   <td class="pf">${r.PL}</td>
@@ -422,76 +481,26 @@ export function renderGeneralTable() {
   `;
 }
 
-export function renderGlobalStandings() {
-  const box = document.getElementById("global-standings");
-  if (!box) return;
-
-  syncTopSelectOptions();
-  const topN = getTopN();
-
-  const rows = [...(state.players || [])]
-    .map((p) => ({
-      name: p.name,
-      PL: Number(p.points ?? 0),
-      PT: Number(p.pf ?? 0),
-      PC: Number(p.pc ?? 0),
-    }))
-    .sort((a, b) => {
-      if (b.PL !== a.PL) return b.PL - a.PL;
-      if (b.PT !== a.PT) return b.PT - a.PT;
-      if (a.PC !== b.PC) return a.PC - b.PC;
-      return String(a.name).localeCompare(String(b.name), "es");
-    })
-    .slice(0, topN);
-
-  box.innerHTML = `
-    <div class="global-standings">
-      <table class="global-table">
-        <thead>
-          <tr>
-            <th style="width:44px;">#</th>
-            <th>Blader</th>
-            <th style="width:70px;">PL</th>
-            <th style="width:70px;">PT</th>
-            <th style="width:70px;">PC</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows
-            .map(
-              (r, i) => `
-            <tr>
-              <td class="muted">${i + 1}</td>
-              <td><strong>${escapeHtml(r.name)}</strong></td>
-              <td class="pf">${r.PL}</td>
-              <td class="pt">${r.PT}</td>
-              <td class="pc">${r.PC}</td>
-            </tr>
-          `
-            )
-            .join("")}
-        </tbody>
-      </table>
-    </div>
-  `;
-}
-
 export function updateKnockoutSelector() {
   const sel = document.getElementById("knockout-round-select");
   if (!sel) return;
 
-  const rounds = [...new Set(state.knockoutMatches.map((m) => m.round))];
+  const rounds = (state.knockoutRounds || []).map((r) => r.round);
   sel.innerHTML = rounds.map((r) => `<option value="${r}">${r}</option>`).join("");
 
-  if (!sel.value && rounds[0]) sel.value = rounds[0];
+  const current = Number(state.currentKnockoutRound || 1);
+  sel.value = String(current);
+
+  const badge = document.getElementById("round-badge");
+  const roundObj = (state.knockoutRounds || []).find((r) => r.round === current);
+  if (badge) badge.textContent = roundObj?.label || `Ronda ${current}`;
 }
 
 export function renderBracket() {
   const cont = document.getElementById("knockout-container");
   if (!cont) return;
 
-  const roundSel = document.getElementById("knockout-round-select");
-  const round = Number(roundSel?.value || 1);
+  const round = Number(state.currentKnockoutRound || 1);
 
   const roundObj = (state.knockoutRounds || []).find((r) => Number(r.round) === round);
   const matches = roundObj?.matches || [];

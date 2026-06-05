@@ -8,7 +8,7 @@ import { state } from "../nucleo/estado.js";
  * - PC = puntos recibidos                     => se guarda en p.pc
  *
  * Orden oficial (para obtenerRankingGlobal):
- * PT desc → PL desc → PC asc
+ * PL desc → PT desc → PC asc → WIN desc → nombre asc
  */
 export function recalcularRankingDesdeGrupos() {
   const mapa = new Map();

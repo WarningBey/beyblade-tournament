@@ -7,6 +7,7 @@ export const initialState = {
   desiredGroupCount: 1,
   phase: "registration",
   roundsSetting: 1,
+  currentKnockoutRound: 1,
 };
 
 export let state = JSON.parse(JSON.stringify(initialState));
