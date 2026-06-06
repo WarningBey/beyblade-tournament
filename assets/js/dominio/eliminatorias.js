@@ -88,6 +88,13 @@ export function startKnockout() {
       a: { id: a.id, name: a.name, score: 0, seed: seedA },
       b: { id: b.id, name: b.name, score: 0, seed: seedB },
       winner: null,
+      status: "pending",
+      judgeId: null,
+      judgeName: null,
+      lockedAt: null,
+      completedAt: null,
+      updatedAt: null,
+      source: "admin",
     });
   }
 
@@ -193,6 +200,13 @@ function buildSemiToFinalesRound(winners, losers, nextRound) {
       a: { ...winners[0], score: 0 },
       b: { ...winners[1], score: 0 },
       winner: null,
+      status: "pending",
+      judgeId: null,
+      judgeName: null,
+      lockedAt: null,
+      completedAt: null,
+      updatedAt: null,
+      source: "admin",
     },
     {
       id: `R${nextRound}-THIRD-${losers[0].id}-${losers[1].id}`,
@@ -201,6 +215,13 @@ function buildSemiToFinalesRound(winners, losers, nextRound) {
       a: { ...losers[0], score: 0 },
       b: { ...losers[1], score: 0 },
       winner: null,
+      status: "pending",
+      judgeId: null,
+      judgeName: null,
+      lockedAt: null,
+      completedAt: null,
+      updatedAt: null,
+      source: "admin",
     },
   ];
 
@@ -237,6 +258,13 @@ function buildNormalNextRound(winners, nextRound) {
       a: { ...a, score: 0 },
       b: { ...b, score: 0 },
       winner: null,
+      status: "pending",
+      judgeId: null,
+      judgeName: null,
+      lockedAt: null,
+      completedAt: null,
+      updatedAt: null,
+      source: "admin",
     });
   }
 

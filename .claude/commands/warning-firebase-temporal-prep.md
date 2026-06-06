@@ -33,80 +33,141 @@ Firebase is NOT a historical database, NOT a ranking system, NOT Portal Warning.
 
 ---
 
-## Two Future Roles (not implemented yet)
+## Full Flow: Modo Torneo en Vivo con QR
 
-**Admin** — uses the main screen:
-- Creates tournament, registers players, generates groups
-- Shows QR code for judges
-- Corrects results, overrides locked matches
-- Starts knockout, finalizes and closes tournament
-
-**Judge** — uses phone after scanning QR:
-- Sees assigned group and its pending matches
-- Registers match scores
-- Cannot modify players, groups, or start knockout
-- Cannot override admin corrections
+```
+Admin PC                          Judge Phone (via QR)
+─────────────────────────────     ──────────────────────────────────
+1. Registra jugadores
+2. Genera grupos + fixtures
+3. [Live mode] Muestra QR  ──→  4. Juez escanea QR
+                                 5. Entra a vista de juez
+                                 6. Ve cards de grupos
+                                 7. Toca un grupo
+                                 8. Ve lista de combates con estados
+                                 9. Toca "Tomar combate" en uno PENDING
+10. Admin ve combate → IN_PROGRESS
+                                10. Combate queda bloqueado para otros
+                                11. Juez ingresa puntos
+                                    (misma lógica: 4 pts, caps actuales)
+                                12. Juez guarda resultado → COMPLETED
+13. Admin ve resultado actualizado
+    en tabla de grupo + ranking
+14. Admin puede corregir
+    (sets status = corrected_by_admin)
+15. Fin del torneo: admin cierra
+    sesión, Firebase descarta datos
+```
 
 ---
 
-## Future Match States to Design For
+## Two Roles (not implemented yet)
+
+**Admin** — usa la pantalla principal (PC):
+- Crea torneo, registra jugadores, genera grupos
+- Muestra QR para jueces
+- Ve todos los combates y sus estados
+- Corrige resultados, sobreescribe combates bloqueados
+- Inicia eliminatoria, finaliza torneo
+
+**Judge** — usa celular tras escanear QR:
+- Ve grupos y combates pendientes
+- Toma un combate (lo bloquea)
+- Ingresa puntos con la misma lógica actual
+- Envía resultado
+- No puede modificar jugadores, grupos, ni iniciar eliminatoria
+
+---
+
+## Match Status Lifecycle
 
 ```
-pending → in_progress → completed → locked → corrected_by_admin
+pending → in_progress → completed → (locked) → corrected_by_admin
 ```
 
-When refactoring match objects, including a `status: "pending"` field is additive and safe. It does not break existing logic and prepares for the future sync layer.
+| Status | Quién lo setea | Significado |
+|--------|---------------|-------------|
+| `pending` | Sistema al crear | Disponible para ser tomado |
+| `in_progress` | Juez al tomar combate | Bloqueado para otros jueces |
+| `completed` | Juez al guardar | Resultado final del juez |
+| `locked` | Sistema opcional | Admin bloqueó edición por juez |
+| `corrected_by_admin` | Admin al corregir | Admin sobreescribió el resultado |
+
+**Backward compatibility:** Matches sin campo `status` (guardados antes de FASE 10) deben tratarse como `pending`. El código que lea `status` debe usar `m.status ?? "pending"`.
+
+---
+
+## Match Object Structure (current + future fields)
+
+Campos actuales de negocio (no cambiar):
+```js
+{
+  id, round, type,
+  a: { id, name, score, isGhost, ... },
+  b: { id, name, score, isGhost, ... },
+  winner, meta
+}
+```
+
+Campos aditivos de FASE 10 (todos opcionales para código existente):
+```js
+{
+  status: "pending",          // pending | in_progress | completed | locked | corrected_by_admin
+  judgeId: null,              // string | null — ID del juez que tomó el combate
+  judgeName: null,            // string | null — nombre legible del juez
+  lockedAt: null,             // ISO timestamp | null — cuándo se bloqueó
+  completedAt: null,          // ISO timestamp | null — cuándo se completó
+  updatedAt: null,            // ISO timestamp | null — última modificación
+  source: "admin",            // "admin" | "judge" — quién ingresó el resultado
+}
+```
+
+---
+
+## Sync Adapter: `assets/js/servicios/sync.js` (FASE 10 ✅)
+
+Archivo creado como stub no-op. Ninguna función hace llamadas reales.
+
+| Función | Propósito futuro |
+|---------|-----------------|
+| `createTournamentSession()` | Admin inicia sesión live, Firebase crea nodo |
+| `getTournamentSession()` | Obtiene metadata de la sesión activa |
+| `publishTournamentState(state)` | Empuja snapshot completo del state |
+| `subscribeToTournamentState(cb)` | Escucha cambios remotos (onValue) |
+| `refreshTournamentState()` | Pull manual del estado (admin o juez) |
+| `closeTournamentSession()` | Cierra sesión y descarta datos de Firebase |
+| `claimMatchForJudge(matchId, judge)` | Transacción atómica → status = in_progress |
+| `releaseMatchFromJudge(matchId)` | Reset → status = pending |
+| `updateMatchResult(matchId, scores)` | Juez envía puntajes |
+| `completeJudgeMatch(matchId)` | Juez finaliza → status = completed |
+| `createJudgeQrPayload()` | Devuelve `{ sessionId, url }` para renderizar QR |
+| `getJudgeAccessUrl()` | URL de entrada del juez |
+| `openJudgeMode()` | Entrada a la vista de juez |
+
+Para reemplazar un stub con Firebase real: solo cambiar el cuerpo de la función. La firma pública no cambia.
 
 ---
 
 ## What to Prepare Now (Without Firebase)
 
-### 1. Add `status` field to match objects (additive, low risk)
+### ✅ Done in FASE 10
 
-When touching match creation in `grupos.js` or `eliminatorias.js`, add:
+1. `assets/js/servicios/sync.js` creado — stub completo, sin Firebase, sin deps
+2. Campos `status`, `judgeId`, `judgeName`, `lockedAt`, `completedAt`, `updatedAt`, `source` agregados a todos los matches nuevos en `grupos.js` y `eliminatorias.js`
+3. Esta documentación actualizada
 
-```js
-{
-  id: "...",
-  round: 1,
-  a: { id, name, score },
-  b: { id, name, score },
-  winner: null,
-  status: "pending"   // pending | in_progress | completed | locked | corrected_by_admin
-}
-```
+### Still needed (not yet done)
 
-### 2. Create a sync adapter stub (do not wire it up yet)
-
-When the `servicios/` layer is being organized, create `assets/js/servicios/sync.js` as an empty adapter:
-
-```js
-// Sync adapter — no-op stub. Replace internals with Firebase when authorized.
-export const SyncAdapter = {
-  push: async (state) => {},
-  pull: async () => null,
-  subscribe: (callback) => () => {},
-  close: async () => {},
-};
-```
-
-`saveState()` in `nucleo/estado.js` remains as-is (localStorage only). The sync adapter is a future side-effect layer, not a replacement for localStorage.
-
-### 3. Keep domain functions pure and callable
-
-The following functions should remain pure input/output — easy to call from any future sync handler without coupling:
-
-- `recalcularStatsGlobales()` — takes state, returns nothing (mutates in place)
-- `obtenerRankingGlobal()` — returns sorted player array
-- `obtenerTopN(n)` — returns top N ranked players
-
-Do not add DOM calls or localStorage calls inside these functions.
+4. Vista de juez — HTML/JS minimal, mobile-first (FASE 12)
+5. Panel QR en pantalla admin (FASE 12)
+6. Indicadores de `status` en `renderGroups()` para pantalla admin (FASE 12)
+7. Reemplazar stubs de `sync.js` con Firebase real (FASE 12, requiere autorización)
 
 ---
 
 ## Future API Surface (names only — do not implement)
 
-When the Firebase authorization is given, these will be thin wrappers around the sync adapter:
+When Firebase authorization is given, these will be thin wrappers:
 
 ```
 saveTournamentState()            push current state to Firebase
@@ -130,6 +191,20 @@ None of these should be implemented until explicitly authorized.
 
 ---
 
+## What FASE 12 Would Require
+
+1. Firebase project setup (explicit authorization required)
+2. Firebase Realtime Database config (stored securely, NOT in repo)
+3. Implementar cuerpos de funciones en `sync.js`
+4. Vista HTML/JS de juez (`assets/judge/index.html`) — mobile-first, sin framework
+5. Panel de QR en pantalla admin
+6. Indicadores visuales de `status` en `renderGroups()` para admin
+7. `claimMatchForJudge()` usando Firebase transaction (atomic lock)
+8. Reconciliación de estado al reconectar (juez o admin que vuelve)
+9. `correctMatchByAdmin()` con sobreescritura segura de match locked
+
+---
+
 ## Verification After Any "Prep" Work
 
 - `index.html` has no new external `<script>` tags
@@ -138,3 +213,4 @@ None of these should be implemented until explicitly authorized.
 - `localStorage` is still the sole persistence mechanism
 - No credentials or API keys appear anywhere in the codebase
 - GitHub Pages deployment still works (static only, no server required)
+- Matches without `status` field (legacy saves) are treated as `"pending"` by reading code

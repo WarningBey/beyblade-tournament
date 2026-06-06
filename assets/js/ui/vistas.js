@@ -1,7 +1,7 @@
 import { state, saveState } from "../nucleo/estado.js";
 
 export function hideAllViews() {
-  ["view-registration", "view-groups", "view-knockout", "view-winner"].forEach((id) => {
+  ["view-registration", "view-groups", "view-knockout", "view-winner", "view-judge"].forEach((id) => {
     document.getElementById(id)?.classList.add("hidden");
   });
 }
@@ -17,6 +17,7 @@ export function restoreUI() {
   if (state.phase === "groups") {
     document.getElementById("view-groups")?.classList.remove("hidden");
     window.renderGroups?.();
+    window.renderGeneralTable?.();
   }
 
   if (state.phase === "knockout") {

@@ -1,6 +1,7 @@
 // assets/js/ui/render.js
 import { state, saveState } from "../nucleo/estado.js";
 import { obtenerRankingGlobal } from "../dominio/ranking.js";
+import { isLiveModeActive, getCurrentSessionId, getJudgeAccessUrl } from "../servicios/sync.js";
 
 export function showToast(msg = "Guardado") {
   const t = document.getElementById("toast");
@@ -147,6 +148,58 @@ function getTopN() {
   return fallback;
 }
 
+export function renderLiveModePanel() {
+  const panel = document.getElementById("live-mode-panel");
+  if (!panel) return;
+
+  const active = isLiveModeActive();
+  const sessionId = getCurrentSessionId();
+
+  if (!active) {
+    panel.innerHTML = `
+      <div class="live-panel live-panel--inactive">
+        <button class="btn btn-primary btn-small" onclick="startLiveMode()">
+          📡 Iniciar Modo Juez
+        </button>
+        <span class="muted tiny" style="margin-left:8px;">
+          Jueces ingresan resultados desde su celular
+        </span>
+      </div>
+    `;
+    return;
+  }
+
+  const url = getJudgeAccessUrl() || "";
+  const qrUrl = url
+    ? `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(url)}&size=180x180&margin=4`
+    : "";
+
+  panel.innerHTML = `
+    <div class="live-panel live-panel--active">
+      <div class="live-panel__header">
+        <span class="live-dot"></span>
+        <span class="live-panel__title">Modo Juez Activo</span>
+        <span class="live-session-id">Sesión: ${escapeHtml(sessionId || "")}</span>
+        <button class="btn btn-ghost btn-small" onclick="stopLiveMode()" style="margin-left:auto;">
+          ✕ Detener
+        </button>
+      </div>
+
+      <div class="live-panel__body">
+        ${qrUrl ? `<img src="${escapeHtml(qrUrl)}" class="live-qr" alt="QR para jueces" width="110" height="110" />` : ""}
+        <div class="live-panel__link-section">
+          <div class="live-link-label muted tiny">Link para jueces:</div>
+          <div class="live-link-text tiny">${escapeHtml(url)}</div>
+          <div class="live-panel__actions">
+            <button class="btn btn-ghost btn-small" onclick="copyJudgeLink()">📋 Copiar link</button>
+            <button class="btn btn-ghost btn-small" onclick="openJudgeMode()">↗ Abrir en nueva pestaña</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 export function renderPlayerList() {
   const list = document.getElementById("player-list");
   if (!list) return;
@@ -191,11 +244,14 @@ export function renderPlayerList() {
 }
 
 export function renderGroups() {
+  renderLiveModePanel();
+
   const cont = document.getElementById("groups-container");
   if (!cont) return;
 
   cont.innerHTML = "";
   const TARGET = 4;
+  const liveMode = isLiveModeActive();
 
   (state.groups || []).forEach((g) => {
     const card = document.createElement("div");
@@ -299,6 +355,8 @@ export function renderGroups() {
              title="${escapeHtml(m.b.name)}">
           ${escapeHtml(m.b.name)}
         </div>
+
+        ${liveMode ? buildMatchStatusBadge(m) : ""}
       `;
 
       matchesHost.appendChild(line);
@@ -341,6 +399,21 @@ function buildGroupStatsFromMatches(g) {
   return map;
 }
 
+function buildMatchStatusBadge(m) {
+  const s = m.status ?? "pending";
+  if (s === "pending") return "";
+  if (s === "in_progress") {
+    return `<span class="match-status-badge match-status-badge--inprogress" title="${escapeHtml(m.judgeName || "juez")}">⚡</span>`;
+  }
+  if (s === "completed") {
+    return `<span class="match-status-badge match-status-badge--done" title="Completado por ${escapeHtml(m.judgeName || "juez")}">✓</span>`;
+  }
+  if (s === "corrected_by_admin") {
+    return `<span class="match-status-badge match-status-badge--admin" title="Corregido por admin">✎</span>`;
+  }
+  return "";
+}
+
 function renderGroupMiniTable(g) {
   const tbody = document.getElementById(`mini-table-body-${g.id}`);
   if (!tbody) return;
@@ -378,6 +451,7 @@ export function renderMatchRow(groupId, matchId) {
   const done = aScore >= TARGET || bScore >= TARGET;
   const aGhost = !!m.a.isGhost;
   const bGhost = !!m.b.isGhost;
+  const liveMode = isLiveModeActive();
 
   row.style.background = done ? "rgba(0,0,0,0.2)" : "transparent";
 
@@ -401,6 +475,7 @@ export function renderMatchRow(groupId, matchId) {
          title="${escapeHtml(m.b.name)}">
       ${escapeHtml(m.b.name)}
     </div>
+    ${liveMode ? buildMatchStatusBadge(m) : ""}
   `;
 
   renderGroupMiniTable(g);

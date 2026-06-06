@@ -199,6 +199,13 @@ export function generateGroups() {
             a: { id: real.id, name: real.name, score: 0, isGhost: false },
             b: { id: ghost.id, name: ghost.name, score: 0, isGhost: true, ghostOf: ghost.ghostOf, sourceGroupId: ghost.sourceGroupId, targetGroupId: ghost.targetGroupId },
             meta: { hasGhost: true, padGhost: true, byeSlotId: byeSlot.id },
+            status: "pending",
+            judgeId: null,
+            judgeName: null,
+            lockedAt: null,
+            completedAt: null,
+            updatedAt: null,
+            source: "admin",
           });
 
           return;
@@ -212,6 +219,13 @@ export function generateGroups() {
           a: { id: a.id, name: a.name, score: 0, isGhost: false },
           b: { id: b.id, name: b.name, score: 0, isGhost: false },
           meta: { hasGhost: false },
+          status: "pending",
+          judgeId: null,
+          judgeName: null,
+          lockedAt: null,
+          completedAt: null,
+          updatedAt: null,
+          source: "admin",
         });
       });
     });
@@ -260,6 +274,26 @@ export function adjustScore(groupId, matchId, sideIndex, delta) {
   saveState();
   window.renderMatchRow?.(groupId, matchId);
   window.renderGeneralTable?.();
+  window.onMatchScoreChanged?.(matchId, m);
+}
+
+// Aplica scores llegados desde Firebase (juez) sin volver a escribir a Firebase.
+export function applyExternalResult(matchId, aScore, bScore, extra = {}) {
+  for (const g of state.groups) {
+    const m = g.matches.find((x) => x.id === matchId);
+    if (m) {
+      m.a.score = Number(aScore ?? 0);
+      m.b.score = Number(bScore ?? 0);
+      if (extra.status !== undefined) m.status = extra.status;
+      if (extra.judgeId !== undefined) m.judgeId = extra.judgeId;
+      if (extra.judgeName !== undefined) m.judgeName = extra.judgeName;
+      if (extra.source !== undefined) m.source = extra.source;
+      if (extra.completedAt !== undefined) m.completedAt = extra.completedAt;
+      recalcularStatsGlobales();
+      saveState();
+      return;
+    }
+  }
 }
 
 /**
